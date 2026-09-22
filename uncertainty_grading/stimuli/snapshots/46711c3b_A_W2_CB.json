@@ -1,0 +1,132 @@
+{
+  "snapshot_id": "46711c3b_A_W2_CB",
+  "dialogue_id": "46711c3b",
+  "session_id": "46711c3b-47cd-497d-8f90-786d3252605d",
+  "condition": "A",
+  "condition_version": "A",
+  "snapshot_type": "W2",
+  "arm": "CB",
+  "rating_point_index": 1,
+  "trial_label": "Trial 1",
+  "puzzle_number": 2,
+  "shared_view": false,
+  "view": "nonshared",
+  "hide_worker": true,
+  "word_count": 28,
+  "ground_truth_piece": 7,
+  "placed_piece": 7,
+  "worker_correct": true,
+  "helper_turn": 6,
+  "worker_turn": 7,
+  "target_board_image": "target_46711c3b_2.png",
+  "worker_board_image": "worker_46711c3b_A_W2_CB.png",
+  "show_candidates": false,
+  "practice_summary": [
+    {
+      "role": "worker",
+      "text": "I'm ready to start! Please let me know which piece to place first and where it should go on the grid."
+    },
+    {
+      "role": "helper",
+      "text": "What piece do you think is next"
+    },
+    {
+      "role": "worker",
+      "text": "The board is empty and I can see all 24 pieces in the staging area. I can't see the target pattern, so I need your help! Please tell me which piece to place first (by describing its color and pattern, or by ID number) and where it should go on the grid (e.g., top-left is (0,0))."
+    },
+    {
+      "role": "helper",
+      "text": "First piece is a light pink background with a purple swirl"
+    },
+    {
+      "role": "worker",
+      "text": "I see two pieces with a light pink background and a swirl: ID 6 (thin purple swirl) and ID 7 (thicker, darker swirl). Could you clarify if you want the thinner purple swirl (ID 6) or the thicker, bold swirl (ID 7)? Also, where should I place this piece on the grid?"
+    },
+    {
+      "role": "helper",
+      "text": "Its thin"
+    },
+    {
+      "role": "worker",
+      "text": "Thank you for clarifying! I will use the thin purple swirl with a light pink background (piece ID 6). Where should I place it on the grid? Please give me the coordinates (for example, top-left is (0,0))."
+    },
+    {
+      "role": "helper",
+      "text": "0,0"
+    },
+    {
+      "role": "worker",
+      "text": "I placed the thin purple swirl on a light pink background (piece ID 6) in the top-left corner at (0, 0). What should I do next?",
+      "actions": [
+        "placed piece #6 at (0, 0)"
+      ]
+    },
+    {
+      "role": "helper",
+      "text": "beside it is a light pink background with a thin purple design of lots of squares in shape of a cross"
+    },
+    {
+      "role": "worker",
+      "text": "I placed the light pink background with a thin purple grid of squares (piece ID 11) immediately to the right of the first piece at (1, 0). Is this correct? What should I do next?",
+      "actions": [
+        "placed piece #11 at (1, 0)"
+      ]
+    },
+    {
+      "role": "helper",
+      "text": "Underneath the swirl one place a dark pink background with 4 purple wavy lines"
+    },
+    {
+      "role": "worker",
+      "text": "I placed the piece with a dark pink background and 4 purple wavy lines (piece ID 12) underneath the swirl piece at position (0, 1). What should I do next?",
+      "actions": [
+        "placed piece #12 at (0, 1)"
+      ]
+    },
+    {
+      "role": "helper",
+      "text": "Underneath that one place a green background with a dark purple lines with circle in the middle making a star shape"
+    },
+    {
+      "role": "worker",
+      "text": "I placed the green background piece with dark purple starburst lines and a circle in the middle (piece ID 15) underneath the wavy lines piece at (0, 2). What should I do next?",
+      "actions": [
+        "placed piece #15 at (0, 2)"
+      ]
+    },
+    {
+      "role": "helper",
+      "text": "That is it for that puzzle"
+    },
+    {
+      "role": "worker",
+      "text": "Great, thank you! All the specified pieces are now correctly placed on the board:\n\n- (0,0): Light pink with thin purple swirl (ID 6)\n- (1,0): Light pink with thin purple cross-grid (ID 11)\n- (0,1): Dark pink with 4 purple wavy lines (ID 12)\n- (0,2): Green with dark purple starburst (ID 15)\n\nLet me know when you're ready to start a new puzzle or if you need anything else!"
+    }
+  ],
+  "practice_puzzle": 1,
+  "turns": [
+    {
+      "role": "divider",
+      "text": "Trial 1"
+    },
+    {
+      "role": "worker",
+      "text": "The board is empty and I have all 24 pieces available. Please let me know which piece to place first (describe the color/pattern or use the ID) and where on the grid it should go (e.g., (0,0) is top-left)."
+    },
+    {
+      "role": "helper",
+      "text": "In 0,0 place white background with 6 diagonal black lines"
+    },
+    {
+      "role": "worker",
+      "text": "I placed the piece with a white background and 6 diagonal black lines (piece ID 3) at position (0, 0). What should I do next?",
+      "actions": [
+        "placed piece #3 at (0, 0)"
+      ]
+    },
+    {
+      "role": "helper",
+      "text": "UNderneath it place light pink background with a black swirl"
+    }
+  ]
+}

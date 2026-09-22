@@ -1,0 +1,96 @@
+{
+  "snapshot_id": "7fa95c17_C_P1W6_CB",
+  "dialogue_id": "7fa95c17",
+  "session_id": "7fa95c17-7841-4cec-b732-b1fc270c9f6c",
+  "condition": "C",
+  "condition_version": "C5",
+  "snapshot_type": "P1W6",
+  "arm": "CB",
+  "rating_point_index": 5,
+  "trial_label": "Practice",
+  "puzzle_number": 1,
+  "shared_view": true,
+  "view": "shared",
+  "hide_worker": false,
+  "word_count": 48,
+  "ground_truth_piece": null,
+  "placed_piece": null,
+  "worker_correct": null,
+  "helper_turn": 18,
+  "worker_turn": 19,
+  "target_board_image": "target_7fa95c17_1.png",
+  "worker_board_image": "worker_7fa95c17_C_P1W6_CB.png",
+  "show_candidates": false,
+  "practice_summary": [],
+  "practice_puzzle": 1,
+  "turns": [
+    {
+      "role": "divider",
+      "text": "Practice"
+    },
+    {
+      "role": "worker",
+      "text": "The grid is empty and I have 24 unique pieces with different colors and patterns. Please tell me which piece to place first and where to put it on the grid (give me column and row). Let me know if you need a description of the available pieces!"
+    },
+    {
+      "role": "helper",
+      "text": "top left is a circular swirl"
+    },
+    {
+      "role": "worker",
+      "text": "I placed the pale-pink tile with a single thick, bold black spiral winding counter-clockwise (ID 7) in the top-left corner at (0, 0). Please let me know what to do next!",
+      "actions": [
+        "placed piece #7 at (0, 0)"
+      ]
+    },
+    {
+      "role": "helper",
+      "text": "directly beside this is a crisscross pattern"
+    },
+    {
+      "role": "worker",
+      "text": "I placed the yellow tile with a bold, coarse crosshatch diamond grid (ID 10) directly beside the swirl at position (1, 0). What should I do next?",
+      "actions": [
+        "placed piece #10 at (1, 0)"
+      ]
+    },
+    {
+      "role": "helper",
+      "text": "under circular pattern is a wave pattern"
+    },
+    {
+      "role": "worker",
+      "text": "I placed the white tile with sharp horizontal zig-zag rows (ID 12) directly under the circular swirl at position (0, 1). Is this the correct piece? What should I place next?",
+      "actions": [
+        "placed piece #12 at (0, 1)"
+      ]
+    },
+    {
+      "role": "helper",
+      "text": "under wave is star"
+    },
+    {
+      "role": "worker",
+      "text": "I placed the yellow tile with a starburst of rays around a centre dot (ID 15) directly under the wave piece at position (0, 2). What should I do next?",
+      "actions": [
+        "placed piece #15 at (0, 2)"
+      ]
+    },
+    {
+      "role": "helper",
+      "text": "circular is upside down, waves need to be fewer/longer in length"
+    },
+    {
+      "role": "worker",
+      "text": "I'll remove the current circular swirl from the top-left so I can try a different orientation or piece. Can you specify which piece best matches the swirl upside down\u2014should I try the pale-pink tile with a single thin black spiral winding clockwise (ID 6) or the pale-pink tile with concentric arcs centered on the right, opening to the left (ID 5) instead? I'll remove the current wave pattern from under the circular swirl so I can replace it with one that has fewer/longer waves. Could you confirm if I should use the light-pink tile with wavy horizontal lines (ID 1) or the pale-pink tile with wavy vertical lines (ID 9) for the longer wave effect?",
+      "actions": [
+        "removed piece at (0, 0)",
+        "removed piece at (0, 1)"
+      ]
+    },
+    {
+      "role": "helper",
+      "text": "id 1 and id 6 try"
+    }
+  ]
+}

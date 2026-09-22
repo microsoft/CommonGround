@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+{% block title %}Consent{% endblock %}
+{% block content %}
+<style>
+  .consent-doc h1 { color: #0078d4; text-align: center; margin-bottom: 24px; }
+  .consent-doc h2 { color: #333; margin-top: 22px; margin-bottom: 12px; font-size: 1.25em; }
+  .consent-doc .project-info { background: #f5f5f5; padding: 15px; border-radius: 5px; margin-bottom: 20px; }
+  .consent-doc .project-info p { margin: 5px 0; }
+  .consent-doc p, .consent-doc li { color: #444; line-height: 1.6; margin-bottom: 10px; }
+  .consent-doc hr { border: none; border-top: 1px solid #ddd; margin: 20px 0; }
+  .consent-doc .consent-question { background: #fff3e0; padding: 20px; border-radius: 5px; margin: 30px 0; text-align: center; }
+  .consent-doc .consent-question h3 { color: #333; margin-bottom: 15px; }
+  .consent-doc .button-container { display: flex; gap: 20px; justify-content: center; margin-top: 20px; flex-wrap: wrap; }
+  .consent-doc button { padding: 15px 40px; font-size: 16px; font-weight: bold; border: none; border-radius: 6px; cursor: pointer; transition: all 0.2s; }
+  .consent-doc .btn-accept { background-color: #0078d4; color: white; }
+  .consent-doc .btn-accept:hover { background-color: #106ebe; transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
+  .consent-doc .btn-decline { background-color: #ce3b3b; color: white; }
+  .consent-doc .btn-decline:hover { background-color: #b83333; transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
+  .consent-doc .note { font-style: italic; color: #666; font-size: 0.95em; margin-top: 15px; }
+</style>
+
+<div class="consent-doc">
+  <h1>Microsoft Research – Participant Consent Form</h1>
+
+  <div class="project-info">
+    <p><strong>Project Title:</strong> Common ground in human-AI interaction</p>
+    <p><strong>Principal Investigator:</strong> Christian Poelitz</p>
+    <p><strong>Co-Investigators:</strong> Sian Lindley</p>
+  </div>
+
+  <hr>
+
+  <h2>Invitation</h2>
+  <p>
+    Thank you for taking the time to consider volunteering in a Microsoft Research project.
+    The purpose of this research is to develop new ways of understanding and measuring human-AI
+    interaction, with a broader goal of researching how to adapt models so that they better support this.
+  </p>
+  <p>
+    To participate in the study, you need to be (1) between 18 to 60 years of age, (2) fluent in English,
+    (3) currently living in the UK, (4) not diagnosed with any language-related disorders, and (5) not
+    diagnosed with any cognitive impairments. You need a laptop or desktop computer with a keyboard and
+    mouse or trackpad to participate. Mobile devices are not supported.
+  </p>
+
+  <h2>Procedures</h2>
+  <p>
+    If you choose to participate, you will be asked to read and rate short excerpts from puzzle-solving
+    conversations between a person and an AI language model. In total, your participation will take around 30 minutes. You will not be asked to
+    interact live with an AI model, nor to play any puzzle task yourself.
+  </p>
+  <p>
+    The data collection will be constrained to your numerical ratings (0-100 sliders), multiple-choice
+    responses, and possible questionnaire responses. No free-text inputs to an AI, screen grabs, video, or any other
+    sensor data will be collected as part of this study. You do not need to turn on your camera. The collected anonymized data
+    will be retained for up to 5 years for further analyses and internal documentation purposes. The findings
+    will be published in academic publications. Prolific will provide us with your Prolific ID number which we
+    will delete following study completion.
+  </p>
+
+  <h2>Compensation</h2>
+  <p>You will be compensated directly via Prolific.</p>
+
+  <h2>Benefits and Risks</h2>
+  <p>
+    <strong>Direct Benefits:</strong> There will be no direct benefit to you as a result of participating in this study.
+  </p>
+  <p>
+    <strong>Benefits to Society:</strong> We hope that findings from this research will help us understand and overcome
+    the limitations of AI models when collaborating with people, to improve human-AI interaction in the future.
+  </p>
+  <p>
+    <strong>Risks:</strong> The risks of participating are similar to what you might experience while performing everyday
+    tasks. Risks include potential frustration or mild discomfort from reading short AI-human dialogue excerpts.
+    To minimize these risks, you may take breaks where needed.
+  </p>
+
+  <h2>Privacy &amp; Confidentiality</h2>
+  <p>
+    Researchers will keep your participation and the information you share as confidential as possible.
+    We will use a keycode rather than personal identifiers when storing and analysing data.
+  </p>
+  <p>
+    <strong>Data sharing plans:</strong> De-identified data such as questionnaire results and slider ratings will be
+    shared within Microsoft, and with external research audiences.
+  </p>
+  <p>
+    <strong>Future sharing plans:</strong> Researchers may share the results of this study publicly, such as in journal
+    articles or conference presentations, but your name will not be included. Information and data collected from you
+    during this study may be used for Microsoft's future research studies or to improve our products or services. If
+    that happens, researchers will remove any direct identifiers, like your name or email address, before sharing.
+  </p>
+
+  <h2>Withdrawal from Study</h2>
+  <p>
+    If you decide to withdraw from the study and you want researchers to remove your study information, you can contact
+    the study team at sianl@microsoft.com. However, after we remove any link to identifiers, it would no longer be
+    possible to delete your data, but any results of the research will not identify you individually. For questions about
+    how Microsoft manages your privacy, please see the
+    <a href="http://go.microsoft.com/fwlink/?LinkId=521839" target="_blank" rel="noopener">Microsoft Privacy Statement</a>.
+  </p>
+
+  <h2>Participation is Your Choice</h2>
+  <p>
+    Whether or not you participate is entirely up to you. You can decide to participate now and stop participating later.
+    Your decision of whether or not to participate will have no impact on any other services or agreements you have with
+    Microsoft outside of this research.
+  </p>
+
+  <h2>Questions or Concerns</h2>
+  <p>
+    If you have any questions or concerns about this study at any time, you may contact the research team at
+    cpoelitz@microsoft.com. If you have any questions about your rights as a research participant, please contact the
+    Microsoft Research Ethics Review Program at MSRStudyfeedback@microsoft.com.
+  </p>
+
+  <hr>
+
+  <div class="consent-question">
+    <h3>Consent</h3>
+    <p><strong>Would you like to participate in this study as described above?</strong></p>
+    <p class="note">If you would like to keep a copy of this consent form, please print or save this page now.</p>
+
+    <form method="post" action="{{ url_for('study4.consent') }}">
+      <div class="button-container">
+        <button type="submit" name="agree" value="yes" class="btn-accept">Yes, I would like to participate</button>
+        <button type="submit" name="agree" value="no" class="btn-decline">No, thanks</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

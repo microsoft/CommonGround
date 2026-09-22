@@ -1,0 +1,224 @@
+{
+  "snapshot_id": "64f2eb9d_A_W6_CB",
+  "dialogue_id": "64f2eb9d",
+  "session_id": "64f2eb9d-23b6-44a0-b815-865fdfec265e",
+  "condition": "A",
+  "condition_version": "A",
+  "snapshot_type": "W6",
+  "arm": "CB",
+  "rating_point_index": 5,
+  "trial_label": "Trial 2",
+  "puzzle_number": 3,
+  "shared_view": false,
+  "view": "nonshared",
+  "hide_worker": true,
+  "word_count": 27,
+  "ground_truth_piece": 20,
+  "placed_piece": 3,
+  "worker_correct": false,
+  "helper_turn": 3,
+  "worker_turn": 4,
+  "target_board_image": "target_64f2eb9d_3.png",
+  "worker_board_image": "worker_64f2eb9d_A_W6_CB.png",
+  "show_candidates": false,
+  "practice_summary": [
+    {
+      "role": "worker",
+      "text": "The board is empty and I have 24 different patterned pieces available. What piece should I place first, and where should I put it? Please specify the pattern or ID, and the position on the grid (column, row)."
+    },
+    {
+      "role": "helper",
+      "text": "Place the swirl"
+    },
+    {
+      "role": "worker",
+      "text": "I see three pieces with swirl patterns: ID 6 (light pink background, thin swirl), ID 7 (bold black swirl on white), and ID 13 (small circle swirl). Which one would you like me to place, and where on the grid should I put it (column, row)?"
+    },
+    {
+      "role": "helper",
+      "text": "ID6"
+    },
+    {
+      "role": "worker",
+      "text": "Where should I place the swirl piece (ID 6) on the grid? Please specify the position (column, row)."
+    },
+    {
+      "role": "helper",
+      "text": "Top left corner"
+    },
+    {
+      "role": "worker",
+      "text": "I placed the swirl piece (ID 6) in the top left corner at position (0, 0). What should I do next?",
+      "actions": [
+        "placed piece #6 at (0, 0)"
+      ]
+    },
+    {
+      "role": "helper",
+      "text": "find the piece with a criss cross pattern"
+    },
+    {
+      "role": "worker",
+      "text": "I see two pieces with a criss-cross pattern: ID 10 (yellow background, bold black lines forming a criss-cross) and ID 11 (white background, thin black lines forming a criss-cross). Which one should I use, and where should I place it?"
+    },
+    {
+      "role": "helper",
+      "text": "id11"
+    },
+    {
+      "role": "worker",
+      "text": "Where should I place the criss-cross pattern piece (ID 11) on the grid? Please specify the position (column, row)."
+    },
+    {
+      "role": "helper",
+      "text": "place it next to the swirl piece"
+    },
+    {
+      "role": "worker",
+      "text": "I placed the criss-cross pattern piece (ID 11) to the right of the swirl piece, at position (1, 0). What should I do next?",
+      "actions": [
+        "placed piece #11 at (1, 0)"
+      ]
+    },
+    {
+      "role": "helper",
+      "text": "find the piece with wavy lines in back, on a pink background"
+    },
+    {
+      "role": "worker",
+      "text": "I found the piece with wavy black lines on a pink background. That is piece ID 1. Where would you like me to place it on the grid (please specify position: column, row)?"
+    },
+    {
+      "role": "helper",
+      "text": "place below the swirl piece"
+    },
+    {
+      "role": "worker",
+      "text": "I placed the piece with wavy black lines on a pink background (ID 1) directly below the swirl piece at position (0, 1). What should I do next?",
+      "actions": [
+        "placed piece #1 at (0, 1)"
+      ]
+    },
+    {
+      "role": "helper",
+      "text": "can you see one which looks like a spier on a green background?"
+    },
+    {
+      "role": "worker",
+      "text": "Yes, I see a piece that looks like a spire or starburst on a green background\u2014it's piece ID 15 (with lines radiating from a center, star-like). Would you like me to place this one? If yes, where should I put it on the grid (please specify column, row)?"
+    },
+    {
+      "role": "helper",
+      "text": "a spider"
+    },
+    {
+      "role": "worker",
+      "text": "I think you meant a spider, not a spire! Among the available pieces, the one that most resembles a spider on a green background is ID 15 (yellow-green with radiating black lines that look like spider legs). Should I place this piece, and if so, where on the grid do you want it (column, row)?"
+    },
+    {
+      "role": "helper",
+      "text": "place this below the piece with wavy lines"
+    },
+    {
+      "role": "worker",
+      "text": "I placed the green spider-like piece (ID 15) below the piece with wavy lines at position (0, 2). What should I do next?",
+      "actions": [
+        "placed piece #15 at (0, 2)"
+      ]
+    },
+    {
+      "role": "helper",
+      "text": "thats the last one"
+    },
+    {
+      "role": "worker",
+      "text": "Great! I see that we've placed all the pieces you requested: the swirl (ID 6), the criss-cross (ID 11), the wavy lines on pink (ID 1), and the green 'spider' (ID 15) in the correct order down the leftmost column and the first criss-cross in the next column. If you need any adjustments or want to continue with more placements, just let me know!"
+    }
+  ],
+  "practice_puzzle": 1,
+  "turns": [
+    {
+      "role": "divider",
+      "text": "Trial 1"
+    },
+    {
+      "role": "worker",
+      "text": "The board is empty and I have 24 unique patterned pieces available, as shown in my selection. What piece should I place first, and at which position on the grid (column, row)? Please specify the piece ID or describe the pattern and let me know where to put it."
+    },
+    {
+      "role": "helper",
+      "text": "bold diagonal lines on a white background"
+    },
+    {
+      "role": "worker",
+      "text": "I placed the piece with bold diagonal lines on a white background (ID 3) in the top-left corner at position (0, 0). What should I do next?",
+      "actions": [
+        "placed piece #3 at (0, 0)"
+      ]
+    },
+    {
+      "role": "helper",
+      "text": "find the thick black swirl on a pink background"
+    },
+    {
+      "role": "worker",
+      "text": "I placed the thick black swirl on a pink background (ID 7) to the right of the bold diagonal lines in the top row at position (1, 0). What should I do next?",
+      "actions": [
+        "placed piece #7 at (1, 0)"
+      ]
+    },
+    {
+      "role": "helper",
+      "text": "do not place it next to the swirl"
+    },
+    {
+      "role": "worker",
+      "text": "I moved the thick black swirl on a pink background (ID 7) to (2, 0), so it is no longer directly next to the bold diagonal lines at (0, 0). Let me know if this is correct, or if you want it in a different location!",
+      "actions": [
+        "moved piece from (1, 0) to (2, 0)"
+      ]
+    },
+    {
+      "role": "helper",
+      "text": "place it below the bit with diagonal lines"
+    },
+    {
+      "role": "worker",
+      "text": "I moved the thick black swirl on a pink background (ID 7) below the piece with bold diagonal lines (ID 3), so now it's at position (0, 1). Let me know if this is correct or if you want to adjust anything else!"
+    },
+    {
+      "role": "helper",
+      "text": "look for the piece with 3 lines, the lbottom line is thicker than the other 2, on a white background, and place it below the swirl piece"
+    },
+    {
+      "role": "worker",
+      "text": "I placed the piece with three lines, where the bottom line is thicker than the other two (ID 16), directly below the swirl piece at position (0, 2). What should I do next?",
+      "actions": [
+        "placed piece #16 at (0, 2)"
+      ]
+    },
+    {
+      "role": "helper",
+      "text": "next to this, place the piece with a green background, which has lots of think black horizontal lines"
+    },
+    {
+      "role": "worker",
+      "text": "I placed the green background piece with lots of thin black horizontal lines (ID 18) to the right of the three-lined piece, at position (1, 2). What would you like me to do next?",
+      "actions": [
+        "placed piece #18 at (1, 2)"
+      ]
+    },
+    {
+      "role": "divider",
+      "text": "Trial 2"
+    },
+    {
+      "role": "worker",
+      "text": "The board is currently empty and I have 24 pieces available, each with a unique pattern and color. Which piece would you like me to place first? Please describe the pattern or specify the piece ID, and let me know where to put it on the grid (column, row)."
+    },
+    {
+      "role": "helper",
+      "text": "find piece with diagonal lines on a white background and place in top left corner"
+    }
+  ]
+}

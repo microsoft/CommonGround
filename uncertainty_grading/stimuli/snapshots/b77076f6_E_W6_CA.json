@@ -1,0 +1,209 @@
+{
+  "snapshot_id": "b77076f6_E_W6_CA",
+  "dialogue_id": "b77076f6",
+  "session_id": "b77076f6-f47b-4724-904a-5da1349dfa64",
+  "condition": "E",
+  "condition_version": "E1",
+  "snapshot_type": "W6",
+  "arm": "CA",
+  "rating_point_index": 5,
+  "trial_label": "Trial 1",
+  "puzzle_number": 2,
+  "shared_view": true,
+  "view": "shared",
+  "hide_worker": false,
+  "word_count": 36,
+  "ground_truth_piece": 0,
+  "placed_piece": 18,
+  "worker_correct": false,
+  "helper_turn": 27,
+  "worker_turn": 28,
+  "target_board_image": "target_b77076f6_2.png",
+  "worker_board_image": "worker_b77076f6_E_W6_CA.png",
+  "show_candidates": false,
+  "practice_summary": [
+    {
+      "role": "worker",
+      "text": "The board is empty and I have 24 unique pieces with various colors and patterns available. Please let me know which piece to place first and at which position on the grid."
+    },
+    {
+      "role": "helper",
+      "text": "pale pink background with swirl.  Please place on left hand side at the top"
+    },
+    {
+      "role": "worker",
+      "text": "I placed the pale pink background piece with a swirl (ID 6) at the top left corner (0, 0). Please confirm if this is correct or let me know the next step.",
+      "actions": [
+        "placed piece #6 at (0, 0)"
+      ]
+    },
+    {
+      "role": "helper",
+      "text": "correct"
+    },
+    {
+      "role": "worker",
+      "text": "Great, the piece is placed correctly. What would you like me to do next? Please describe the next piece and its position."
+    },
+    {
+      "role": "helper",
+      "text": "cream background with cross hatch pattern.  Place to the right of the first one."
+    },
+    {
+      "role": "worker",
+      "text": "I placed the cream background piece with a cross hatch pattern (ID 11) to the right of the first one at position (1, 0). Please let me know if this is correct or what to do next.",
+      "actions": [
+        "placed piece #11 at (1, 0)"
+      ]
+    },
+    {
+      "role": "helper",
+      "text": "correct"
+    },
+    {
+      "role": "worker",
+      "text": "The current state is correct with the pale pink swirl piece (ID 6) at (0,0) and the cream cross hatch piece (ID 11) at (1,0). Please let me know which piece and position to do next!"
+    },
+    {
+      "role": "helper",
+      "text": "pink background with 5 waves going across.  Place this below the first one."
+    },
+    {
+      "role": "worker",
+      "text": "I placed the pink background piece with 5 waves going across (ID 1) directly below the first one at position (0, 1). Please confirm if this is correct or let me know what to do next!",
+      "actions": [
+        "placed piece #1 at (0, 1)"
+      ]
+    },
+    {
+      "role": "helper",
+      "text": "correct"
+    },
+    {
+      "role": "worker",
+      "text": "The current pieces are placed correctly:\n- (0,0): pale pink with swirl (ID 6)\n- (1,0): cream with cross hatch (ID 11)\n- (0,1): pink with 5 waves (ID 1)\n\nReady for your next instruction! Which piece and position should I place next?"
+    },
+    {
+      "role": "helper",
+      "text": "yellow background with starburst.  Place below the one you have just done"
+    },
+    {
+      "role": "worker",
+      "text": "I placed the yellow background piece with a starburst pattern (ID 15) directly below the previous one at position (0, 2). Please confirm if this is correct or let me know the next step!",
+      "actions": [
+        "placed piece #15 at (0, 2)"
+      ]
+    },
+    {
+      "role": "helper",
+      "text": "correct"
+    },
+    {
+      "role": "worker",
+      "text": "Thank you for confirming! The board matches the instructions so far. Please let me know which piece to place next and its position."
+    }
+  ],
+  "practice_puzzle": 1,
+  "turns": [
+    {
+      "role": "divider",
+      "text": "Trial 1"
+    },
+    {
+      "role": "worker",
+      "text": "The board is empty and I have 24 pieces available, each with distinct colors and patterns. Please let me know which piece you'd like me to place first and in which position on the grid."
+    },
+    {
+      "role": "helper",
+      "text": "White background with black diagonal stripes.  Place top the top left of the screen."
+    },
+    {
+      "role": "worker",
+      "text": "I placed the white tile with a few bold thick black diagonal lines rising to the right (ID 3) at the top left corner (0, 0). Please confirm if this is correct or provide the next instruction.",
+      "actions": [
+        "placed piece #3 at (0, 0)"
+      ]
+    },
+    {
+      "role": "helper",
+      "text": "Not correct but close.  Please flip the stripes"
+    },
+    {
+      "role": "worker",
+      "text": "I replaced the current piece with the white tile with a few bold thick black diagonal lines falling to the right (ID 20) at the top left corner. Please confirm if this is now correct or if you need any adjustments!",
+      "actions": [
+        "removed piece at (0, 0)",
+        "placed piece #20 at (0, 0)"
+      ]
+    },
+    {
+      "role": "helper",
+      "text": "correct"
+    },
+    {
+      "role": "worker",
+      "text": "Great! The white tile with a few bold thick black diagonal lines falling to the right (flipped, ID 20) is correctly placed at the top left corner. Please let me know which piece to place next and where."
+    },
+    {
+      "role": "helper",
+      "text": "pale white background with swirl.  Place below the first piece."
+    },
+    {
+      "role": "worker",
+      "text": "I placed the pale-pink tile with a single thin black spiral winding clockwise (ID 6) directly below the first piece at position (0, 1). Please confirm if this is correct or let me know the next step!",
+      "actions": [
+        "placed piece #6 at (0, 1)"
+      ]
+    },
+    {
+      "role": "helper",
+      "text": "not correct but close.  Please flip the piece and make the swirl bolder."
+    },
+    {
+      "role": "worker",
+      "text": "I replaced the previous swirl piece with the pale-pink tile with a single thick, bold black spiral winding counter-clockwise (ID 7) at position (0, 1). Please confirm if this is correct or let me know if you want further adjustments.",
+      "actions": [
+        "removed piece at (0, 1)",
+        "placed piece #7 at (0, 1)"
+      ]
+    },
+    {
+      "role": "helper",
+      "text": "correct"
+    },
+    {
+      "role": "worker",
+      "text": "Thank you for confirming the placements so far! The top left (0,0) has the white tile with a few bold thick black diagonal lines falling to the right (ID 20), and directly below it (0,1) is the pale-pink tile with a single thick, bold black spiral winding counter-clockwise (ID 7). Please let me know which piece to place next and its location on the grid."
+    },
+    {
+      "role": "helper",
+      "text": "White background with three lines going acroos.  The bottom line is bold, the middle thin and the top inbetween. Please place this below the last one"
+    },
+    {
+      "role": "worker",
+      "text": "I placed the white tile with three horizontal lines, a thin faint middle line between a thick top and a thicker bottom (ID 16) directly below the last one at position (0, 2). Please confirm if this is correct or let me know any adjustments!",
+      "actions": [
+        "placed piece #16 at (0, 2)"
+      ]
+    },
+    {
+      "role": "helper",
+      "text": "correct"
+    },
+    {
+      "role": "worker",
+      "text": "Thank you for confirming that the placements are correct. The leftmost column (positions (0,0), (0,1), (0,2)) is now filled as you described.\n\nPlease let me know which piece you'd like to place next and where on the grid it should go!"
+    },
+    {
+      "role": "helper",
+      "text": "Yellow background with 6 lines. all slightly different thickness blurriness. Place this beside the one you just did."
+    },
+    {
+      "role": "worker",
+      "text": "I placed the yellow tile with thin vertical lines (ID 18) to the right of the last placed piece at position (1, 2). Please confirm if this is correct or if you would like any changes.",
+      "actions": [
+        "placed piece #18 at (1, 2)"
+      ]
+    }
+  ]
+}

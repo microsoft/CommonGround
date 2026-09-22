@@ -1,0 +1,51 @@
+{
+  "snapshot_id": "0beed399_E_P1W2_CB",
+  "dialogue_id": "0beed399",
+  "session_id": "0beed399-eda5-4b6d-9d9f-498a0510661c",
+  "condition": "E",
+  "condition_version": "E1",
+  "snapshot_type": "P1W2",
+  "arm": "CB",
+  "rating_point_index": 1,
+  "trial_label": "Practice",
+  "puzzle_number": 1,
+  "shared_view": false,
+  "view": "nonshared",
+  "hide_worker": true,
+  "word_count": 30,
+  "ground_truth_piece": null,
+  "placed_piece": null,
+  "worker_correct": null,
+  "helper_turn": 6,
+  "worker_turn": 7,
+  "target_board_image": "target_0beed399_1.png",
+  "worker_board_image": "worker_0beed399_E_P1W2_CB.png",
+  "show_candidates": false,
+  "practice_summary": [],
+  "practice_puzzle": 1,
+  "turns": [
+    {
+      "role": "divider",
+      "text": "Practice"
+    },
+    {
+      "role": "worker",
+      "text": "The board is currently empty and I have 24 unique patterned pieces available. Could you please tell me which piece to place first and at which position on the grid?"
+    },
+    {
+      "role": "helper",
+      "text": "The piece has a clockwise spiral pattern.  Starting from the centre of the tile. THe tile is placed in the top left location.  Row 1, column 1."
+    },
+    {
+      "role": "worker",
+      "text": "I placed the pale-pink tile with a single thick, bold black spiral winding counter-clockwise (ID 7) in the top-left corner at position (0, 0). Please let me know what to do next!",
+      "actions": [
+        "placed piece #7 at (0, 0)"
+      ]
+    },
+    {
+      "role": "helper",
+      "text": "The next tile is at location row 0 column 1. I.e.  to the right of the first tile.  This tile has  repeating diamond pattern.  with three rows of three diamonds.  Total of 9 diamonds on the tile"
+    }
+  ]
+}

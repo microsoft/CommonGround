@@ -1,0 +1,93 @@
+{
+  "snapshot_id": "5dc8e927_A_P1W3_CA",
+  "dialogue_id": "5dc8e927",
+  "session_id": "5dc8e927-5de0-46c5-b5b4-a900e3fb41df",
+  "condition": "A",
+  "condition_version": "A",
+  "snapshot_type": "P1W3",
+  "arm": "CA",
+  "rating_point_index": 2,
+  "trial_label": "Practice",
+  "puzzle_number": 1,
+  "shared_view": false,
+  "view": "nonshared",
+  "hide_worker": true,
+  "word_count": 25,
+  "ground_truth_piece": null,
+  "placed_piece": null,
+  "worker_correct": null,
+  "helper_turn": 18,
+  "worker_turn": 19,
+  "target_board_image": "target_5dc8e927_1.png",
+  "worker_board_image": "worker_5dc8e927_A_P1W3_CA.png",
+  "show_candidates": false,
+  "practice_summary": [],
+  "practice_puzzle": 1,
+  "turns": [
+    {
+      "role": "divider",
+      "text": "Practice"
+    },
+    {
+      "role": "worker",
+      "text": "Hello Helper! The board is empty and I have 24 different patterned pieces available. What should I place first, and where should I place it?"
+    },
+    {
+      "role": "helper",
+      "text": "lets put another swirl pattern next?"
+    },
+    {
+      "role": "worker",
+      "text": "I have three swirl pattern pieces: ID 6 (large spiral), ID 7 (dark swirl), and ID 13 (circle swirl). \nWhich swirl pattern should I use and where should I place it on the grid?"
+    },
+    {
+      "role": "helper",
+      "text": "ID13"
+    },
+    {
+      "role": "worker",
+      "text": "I've selected the circle swirl pattern (ID 13). Where should I place it on the grid? Please specify the exact coordinates (column, row) such as (0, 0) for the top-left corner."
+    },
+    {
+      "role": "helper",
+      "text": "0,0"
+    },
+    {
+      "role": "worker",
+      "text": "I placed the circle swirl pattern (ID 13) in the top-left corner at (0, 0). What would you like to do next?",
+      "actions": [
+        "placed piece #13 at (0, 0)"
+      ]
+    },
+    {
+      "role": "helper",
+      "text": "put id13 on 2,0"
+    },
+    {
+      "role": "worker",
+      "text": "I placed the circle swirl pattern (ID 13) at position (2, 0). What would you like to do next?",
+      "actions": [
+        "placed piece #13 at (2, 0)"
+      ]
+    },
+    {
+      "role": "helper",
+      "text": "do you have waved patter"
+    },
+    {
+      "role": "worker",
+      "text": "Yes, I have waved pattern pieces available. The most prominent is ID 12, which shows a black wavy (zig-zag) line pattern, and ID 1 and ID 9 also have wave-like patterns (ID 1 has wavy horizontal lines, ID 9 has vertical wavy lines). Which specific ID would you like me to use, and where should I place it?"
+    },
+    {
+      "role": "helper",
+      "text": "put ID12 on (1,1)"
+    },
+    {
+      "role": "worker",
+      "text": "I placed the waved pattern piece (ID 12) at position (1, 1). What would you like to do next?",
+      "actions": [
+        "placed piece #12 at (1, 1)"
+      ]
+    }
+  ]
+}

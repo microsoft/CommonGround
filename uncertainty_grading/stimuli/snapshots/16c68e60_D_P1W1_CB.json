@@ -1,0 +1,40 @@
+{
+  "snapshot_id": "16c68e60_D_P1W1_CB",
+  "dialogue_id": "16c68e60",
+  "session_id": "16c68e60-8a65-45a1-ad93-2d0412e55670",
+  "condition": "D",
+  "condition_version": "D2",
+  "snapshot_type": "P1W1",
+  "arm": "CB",
+  "rating_point_index": 0,
+  "trial_label": "Practice",
+  "puzzle_number": 1,
+  "shared_view": false,
+  "view": "nonshared",
+  "hide_worker": true,
+  "word_count": 33,
+  "ground_truth_piece": null,
+  "placed_piece": null,
+  "worker_correct": null,
+  "helper_turn": 3,
+  "worker_turn": 4,
+  "target_board_image": "target_16c68e60_1.png",
+  "worker_board_image": "worker_16c68e60_D_P1W1_CB.png",
+  "show_candidates": false,
+  "practice_summary": [],
+  "practice_puzzle": 1,
+  "turns": [
+    {
+      "role": "divider",
+      "text": "Practice"
+    },
+    {
+      "role": "worker",
+      "text": "The board is currently empty and I have 24 unique pieces available. What should I place first and where would you like it on the grid? Please describe the piece and the position."
+    },
+    {
+      "role": "helper",
+      "text": "Place the pale pink tile, with a clockwise spiral in the top, left hand corner"
+    }
+  ]
+}

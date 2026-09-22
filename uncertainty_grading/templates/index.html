@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}Welcome{% endblock %}
+{% block content %}
+  <h1>Puzzle Dialogue Rating Study</h1>
+  <p class="lead">Welcome to Study 4</p>
+  <p>In this ~20 minute task you will read short excerpts of a
+    conversation between a person and an AI working together on a tile puzzle,
+    and rate how likely the AI is to place the correct piece.</p>
+  <p style="margin-top: 20px; color: #666;">Redirecting you to the consent form...</p>
+  <script>
+    // Auto-redirect to consent after 1 second
+    setTimeout(function() {
+      window.location.href = "{{ url_for('study4.consent') }}";
+    }, 1000);
+  </script>
+{% endblock %}

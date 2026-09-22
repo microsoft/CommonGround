@@ -1,0 +1,44 @@
+{
+  "snapshot_id": "4128d849_A_CHK2_CB",
+  "dialogue_id": "4128d849",
+  "session_id": "4128d849-54a3-4e01-b2b1-78b39d7c2be9",
+  "condition": "A",
+  "condition_version": "A",
+  "snapshot_type": "CHK2",
+  "arm": "CB",
+  "rating_point_index": -1,
+  "trial_label": "Trial 2",
+  "puzzle_number": 3,
+  "shared_view": true,
+  "view": "shared",
+  "hide_worker": false,
+  "word_count": 29,
+  "ground_truth_piece": 7,
+  "placed_piece": 1,
+  "worker_correct": false,
+  "is_check": true,
+  "helper_turn": -1,
+  "worker_turn": -1,
+  "target_board_image": "target_4128d849_3.png",
+  "worker_board_image": "check_4128d849_CHK2.png",
+  "show_candidates": false,
+  "practice_summary": [],
+  "turns": [
+    {
+      "role": "helper",
+      "text": "Good progress. Let's place another piece."
+    },
+    {
+      "role": "worker",
+      "text": "Sure, I'm ready for the next one."
+    },
+    {
+      "role": "helper",
+      "text": "Please place the pink piece with counter-clockwise spiral emanating from center on the board."
+    },
+    {
+      "role": "worker",
+      "text": "Hmm, I honestly can't tell which piece that is\u2026 maybe the light pink piece with horizontal lines with wavy undulations? I'll place that one, but I'm really not confident."
+    }
+  ]
+}

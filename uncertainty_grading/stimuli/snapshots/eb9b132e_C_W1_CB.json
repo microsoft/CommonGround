@@ -1,0 +1,89 @@
+{
+  "snapshot_id": "eb9b132e_C_W1_CB",
+  "dialogue_id": "eb9b132e",
+  "session_id": "eb9b132e-f729-4c2f-906c-e4dc5cff5b7a",
+  "condition": "C",
+  "condition_version": "C5",
+  "snapshot_type": "W1",
+  "arm": "CB",
+  "rating_point_index": 0,
+  "trial_label": "Trial 1",
+  "puzzle_number": 2,
+  "shared_view": false,
+  "view": "nonshared",
+  "hide_worker": true,
+  "word_count": 32,
+  "ground_truth_piece": 20,
+  "placed_piece": 3,
+  "worker_correct": false,
+  "helper_turn": 3,
+  "worker_turn": 4,
+  "target_board_image": "target_eb9b132e_2.png",
+  "worker_board_image": "worker_eb9b132e_C_W1_CB.png",
+  "show_candidates": false,
+  "practice_summary": [
+    {
+      "role": "worker",
+      "text": "The board is empty and I have 24 unique patterned pieces available. What piece should I place first, and in which position?"
+    },
+    {
+      "role": "helper",
+      "text": "The swirl to the top left"
+    },
+    {
+      "role": "worker",
+      "text": "I placed the black swirl piece (ID 7) in the top-left corner at position (0, 0). Please let me know what to do next!",
+      "actions": [
+        "placed piece #7 at (0, 0)"
+      ]
+    },
+    {
+      "role": "helper",
+      "text": "Then waves under it"
+    },
+    {
+      "role": "worker",
+      "text": "I placed the pink piece with wavy black lines (ID 1) directly under the swirl at position (0, 1). What should I do next?",
+      "actions": [
+        "placed piece #1 at (0, 1)"
+      ]
+    },
+    {
+      "role": "helper",
+      "text": "The star in light green below"
+    },
+    {
+      "role": "worker",
+      "text": "I placed the light green starburst piece (ID 15) directly below the waves at position (0, 2). What should I do next?",
+      "actions": [
+        "placed piece #15 at (0, 2)"
+      ]
+    },
+    {
+      "role": "helper",
+      "text": "Then the squares next to the swirl"
+    },
+    {
+      "role": "worker",
+      "text": "I placed the cream piece with a grid of thin squares (ID 11) to the right of the swirl at position (1, 0). Please confirm if this is the correct piece and position, or let me know if you want a different 'squares' piece (e.g., ID 10 or 21).",
+      "actions": [
+        "placed piece #11 at (1, 0)"
+      ]
+    }
+  ],
+  "practice_puzzle": 1,
+  "turns": [
+    {
+      "role": "divider",
+      "text": "Trial 1"
+    },
+    {
+      "role": "worker",
+      "text": "The board is currently empty, and I have 24 different patterned pieces available. Which piece would you like me to place first, and in which position on the grid?"
+    },
+    {
+      "role": "helper",
+      "text": "White background with 6 black lines from top left to bottom right, put this at the top left corner"
+    }
+  ]
+}

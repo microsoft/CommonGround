@@ -1,0 +1,186 @@
+{
+  "snapshot_id": "0beed399_C_W7_CA",
+  "dialogue_id": "0beed399",
+  "session_id": "0beed399-eda5-4b6d-9d9f-498a0510661c",
+  "condition": "C",
+  "condition_version": "C5",
+  "snapshot_type": "W7",
+  "arm": "CA",
+  "rating_point_index": 6,
+  "trial_label": "Trial 2",
+  "puzzle_number": 3,
+  "shared_view": false,
+  "view": "nonshared",
+  "hide_worker": true,
+  "word_count": 30,
+  "ground_truth_piece": 0,
+  "placed_piece": 18,
+  "worker_correct": false,
+  "helper_turn": 9,
+  "worker_turn": 10,
+  "target_board_image": "target_0beed399_3.png",
+  "worker_board_image": "worker_0beed399_C_W7_CA.png",
+  "show_candidates": false,
+  "practice_summary": [
+    {
+      "role": "worker",
+      "text": "The board is currently empty and I have 24 unique patterned pieces available. Could you please tell me which piece to place first and at which position on the grid?"
+    },
+    {
+      "role": "helper",
+      "text": "The piece has a clockwise spiral pattern.  Starting from the centre of the tile. THe tile is placed in the top left location.  Row 1, column 1."
+    },
+    {
+      "role": "worker",
+      "text": "I placed the clockwise spiral pattern piece (ID 7) in the top-left corner at position (0, 0). Please let me know what to do next!",
+      "actions": [
+        "placed piece #7 at (0, 0)"
+      ]
+    },
+    {
+      "role": "helper",
+      "text": "The next tile is at location row 0 column 1. I.e.  to the right of the first tile.  This tile has  repeating diamond pattern.  with three rows of three diamonds.  Total of 9 diamonds on the tile"
+    },
+    {
+      "role": "worker",
+      "text": "I placed the piece with the repeating diamond pattern (ID 10) to the right of the spiral, at position (1, 0). What\u2019s next?",
+      "actions": [
+        "placed piece #10 at (1, 0)"
+      ]
+    },
+    {
+      "role": "helper",
+      "text": "The next tile is below the first tile.  Position 1,1.  It has four wavy lines in horizontal orientation."
+    },
+    {
+      "role": "worker",
+      "text": "I placed the piece with four horizontal wavy lines (ID 1) directly below the first spiral tile at position (0, 1). Please let me know the next step!",
+      "actions": [
+        "placed piece #1 at (0, 1)"
+      ]
+    },
+    {
+      "role": "helper",
+      "text": "The last tile is below the previous one. It has a radial pattern of spokes, all emanating from the centre of the tile. There are 12 spokes."
+    },
+    {
+      "role": "worker",
+      "text": "I placed the tile with the radial pattern of 12 spokes (ID 15) directly below the horizontal wavy lines, at position (0, 2). Please let me know if this is correct or what to do next!",
+      "actions": [
+        "placed piece #15 at (0, 2)"
+      ]
+    },
+    {
+      "role": "helper",
+      "text": "that is all now.  I will preceed to the next puzzle."
+    },
+    {
+      "role": "worker",
+      "text": "Thank you for your guidance! The current board matches your instructions with the spiral, diamond, wavy lines, and radial spoke tiles placed correctly. I'm ready to proceed to the next puzzle whenever you are."
+    }
+  ],
+  "practice_puzzle": 1,
+  "turns": [
+    {
+      "role": "divider",
+      "text": "Trial 1"
+    },
+    {
+      "role": "worker",
+      "text": "The board is empty and I have 24 distinct patterned pieces available. Could you please tell me which piece to place first and at which position on the grid?"
+    },
+    {
+      "role": "helper",
+      "text": "There are four tiles in this puzzle.  First is at the top left (0,0).  It has 8 diagonal lines, with a negative slope - sloping down from left to right."
+    },
+    {
+      "role": "worker",
+      "text": "I placed the light-pink tile with many thin black diagonal lines rising to the right (ID 2) at the top-left corner (0,0). What is the next tile and its location?",
+      "actions": [
+        "placed piece #2 at (0, 0)"
+      ]
+    },
+    {
+      "role": "helper",
+      "text": "The next tile is below the previous.  It is an anti clockwise spiral. Centre of the spiral is the centre of the tile."
+    },
+    {
+      "role": "worker",
+      "text": "I placed the pale-pink tile with a single thin black spiral winding clockwise (ID 6) directly below the previous tile at position (0, 1). What would you like me to do next?",
+      "actions": [
+        "placed piece #6 at (0, 1)"
+      ]
+    },
+    {
+      "role": "helper",
+      "text": "The next tile is below the previosu.  It has three horizontal lines, one at the top of the tile, one at the bottom, one in the middle.  The lines cary in density, with bottom line thicker than the other two."
+    },
+    {
+      "role": "worker",
+      "text": "I placed the white tile with three horizontal lines, a thin faint middle line between a thick top and a thicker bottom (ID 16)\u2014at position (0, 2), directly below the previous tile. Please describe the final tile and its location.",
+      "actions": [
+        "placed piece #16 at (0, 2)"
+      ]
+    },
+    {
+      "role": "helper",
+      "text": "The last tile is to the right of the previous.  It has a yellow background and six equally spaced horizontal lines."
+    },
+    {
+      "role": "worker",
+      "text": "I placed the yellow tile with thin vertical lines (ID 18) to the right of the previous tile at position (1, 2). Please let me know if everything is correct or if any adjustments are needed!",
+      "actions": [
+        "placed piece #18 at (1, 2)"
+      ]
+    },
+    {
+      "role": "helper",
+      "text": "End of puzzle.  Moving on.!"
+    },
+    {
+      "role": "worker",
+      "text": "Thank you for the update and confirming the end of this puzzle! I'm ready to begin the next challenge whenever you are\u2014just let me know the first tile and its placement."
+    },
+    {
+      "role": "divider",
+      "text": "Trial 2"
+    },
+    {
+      "role": "worker",
+      "text": "The board is empty and I have all 24 patterned pieces ready. Could you please tell me which piece to place first and where it should go on the grid?"
+    },
+    {
+      "role": "helper",
+      "text": "There are four tiles.  First is at the top left of the playing board.  It has a white background and six diagonal lines, sloping down from left to right."
+    },
+    {
+      "role": "worker",
+      "text": "I placed the light-pink tile with many thin black diagonal lines rising to the right (ID 2) at the top-left corner (0,0). Please describe the next tile and its location.",
+      "actions": [
+        "placed piece #2 at (0, 0)"
+      ]
+    },
+    {
+      "role": "helper",
+      "text": "The next tile is to the right of the previous.  It is a pink background color. WIth anti clockwise spiral shape, centred at the centre of the tile."
+    },
+    {
+      "role": "worker",
+      "text": "I placed the pale-pink tile with a single thin black spiral winding clockwise (ID 6) to the right of the previous tile at position (1, 0). What should I do next?",
+      "actions": [
+        "placed piece #6 at (1, 0)"
+      ]
+    },
+    {
+      "role": "helper",
+      "text": "The next tile is to the right of the previous.  Yellow background and six thin horizontal lines"
+    },
+    {
+      "role": "worker",
+      "text": "I placed the yellow tile with thin vertical lines (ID 18) to the right of the previous tile at position (2, 0). Please describe the final tile and its location.",
+      "actions": [
+        "placed piece #18 at (2, 0)"
+      ]
+    }
+  ]
+}

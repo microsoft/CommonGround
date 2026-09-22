@@ -1,0 +1,100 @@
+{
+  "snapshot_id": "b0cb284b_D_P1W5_CA",
+  "dialogue_id": "b0cb284b",
+  "session_id": "b0cb284b-1dcb-4674-873c-02f4fb823487",
+  "condition": "D",
+  "condition_version": "D2",
+  "snapshot_type": "P1W5",
+  "arm": "CA",
+  "rating_point_index": 4,
+  "trial_label": "Practice",
+  "puzzle_number": 2,
+  "shared_view": false,
+  "view": "nonshared",
+  "hide_worker": true,
+  "word_count": 24,
+  "ground_truth_piece": null,
+  "placed_piece": null,
+  "worker_correct": null,
+  "helper_turn": 18,
+  "worker_turn": 19,
+  "target_board_image": "target_b0cb284b_2.png",
+  "worker_board_image": "worker_b0cb284b_D_P1W5_CA.png",
+  "show_candidates": false,
+  "practice_summary": [],
+  "practice_puzzle": 2,
+  "turns": [
+    {
+      "role": "divider",
+      "text": "Practice"
+    },
+    {
+      "role": "worker",
+      "text": "The board is empty and I have 24 unique patterned pieces available. What piece should I place first, and where should I put it?"
+    },
+    {
+      "role": "helper",
+      "text": "place the swirl shape 2 from the top on the left hand side"
+    },
+    {
+      "role": "worker",
+      "text": "I placed the pale-pink tile with a single thin black spiral winding clockwise (ID 6, 2nd from the top in the swirl group) on the left-hand side, position (0, 1). I'm not fully certain this was the right choice.",
+      "actions": [
+        "placed piece #6 at (0, 1)"
+      ]
+    },
+    {
+      "role": "helper",
+      "text": "place the diagonial line piece in the top left hand corner"
+    },
+    {
+      "role": "worker",
+      "text": "I placed the white tile with a few bold thick black diagonal lines rising to the right (ID 3) in the top left-hand corner at position (0, 0). I'm not completely sure this is the right choice.",
+      "actions": [
+        "placed piece #3 at (0, 0)"
+      ]
+    },
+    {
+      "role": "helper",
+      "text": "place the widely spaced line piece 3 down on the left hand side"
+    },
+    {
+      "role": "worker",
+      "text": "I placed the white tile with thin straight black vertical lines (ID 8) 3 down on the left-hand side at position (0, 2). Is this correct or should I adjust it?",
+      "actions": [
+        "placed piece #8 at (0, 2)"
+      ]
+    },
+    {
+      "role": "helper",
+      "text": "it is horizontal lines"
+    },
+    {
+      "role": "worker",
+      "text": "I replaced the vertical lines with the white tile with three horizontal lines, a thin faint middle line between a thick top and a thicker bottom (ID 16) at position (0, 2), as you indicated it should be horizontal lines. Is this correct?",
+      "actions": [
+        "removed piece at (0, 2)",
+        "placed piece #16 at (0, 2)"
+      ]
+    },
+    {
+      "role": "helper",
+      "text": "yes"
+    },
+    {
+      "role": "worker",
+      "text": "Great, the top three spots on the left side now have:\n- (0,0): white tile with a few bold thick black diagonal lines rising to the right (ID 3)\n- (0,1): pale-pink tile with a single thin black spiral winding clockwise (ID 6)\n- (0,2): white tile with three horizontal lines, a thin faint middle line between a thick top and a thicker bottom (ID 16)\n\nWhat should I place next, and where should it go?"
+    },
+    {
+      "role": "helper",
+      "text": "go one in from the left and 3 down, place a thinly spaced horizontal line piece there"
+    },
+    {
+      "role": "worker",
+      "text": "I placed the white tile with five thin horizontal lines, every other line indented from the left (ID 23) one in from the left and three down at position (1, 3). Please let me know if this is correct or if you want any adjustments.",
+      "actions": [
+        "placed piece #23 at (1, 3)"
+      ]
+    }
+  ]
+}

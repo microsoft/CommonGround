@@ -1,0 +1,74 @@
+{# Renders the trajectory stimulus in the original-study Helper layout: the
+   sticky Target + Worker Progress grids and the incrementally-revealed
+   transcript. Expects `snapshot` in context. `hide_target` (optional, testing)
+   hides the Target grid; `hide_worker` (non-shared view) hides the Worker's
+   progress board so the Helper must rely on the Worker's messages. When the
+   Worker's board is hidden a placeholder panel is shown next to the Target so it
+   is clear the Worker may have acted but the Helper cannot see it. #}
+{% set show_worker = snapshot.worker_board_image and not hide_worker %}
+{% set show_target = not hide_target %}
+{% set show_worker_slot = show_worker or hide_worker %}
+{% set n_boards = (1 if show_candidates else 0) + (1 if show_target else 0) + (1 if show_worker_slot else 0) %}
+
+<div class="transcript">
+  {% for turn in snapshot.turns %}
+    {% if turn.role == 'divider' %}
+      <div class="trial-divider {{ 'summary' if turn.summary }}">{{ turn.text }}</div>
+    {% else %}
+      <div class="turn {{ turn.role }} {{ 'summary' if turn.summary }}">
+        <div class="who">{{ 'Helper (you)' if turn.role == 'helper' else 'AI (Worker)' }}</div>
+        <div class="text">{{ turn.text }}</div>
+      </div>
+    {% endif %}
+  {% endfor %}
+</div>
+
+<div class="boards {{ 'three' if n_boards >= 3 else ('two' if n_boards == 2 else 'one') }}">
+  {% if show_candidates %}
+  <figure class="board candidates">
+    <div class="candidate-circle" style="--n: {{ (candidate_pieces or [])|length }}">
+      {% for fn in candidate_pieces or [] %}
+      <img class="candidate-piece" style="--i: {{ loop.index0 }}"
+           src="{{ url_for('study4.board_image', filename=fn) }}"
+           alt="An available piece">
+      {% endfor %}
+    </div>
+    <figcaption>Available pieces <span class="muted">(all the pieces the Worker chooses from, arranged in a ring in random order)</span></figcaption>
+  </figure>
+  {% endif %}
+  {% if show_target %}
+  <figure class="board">
+    <img class="board-img"
+         src="{{ url_for('study4.board_image', filename=snapshot.target_board_image) }}"
+         alt="Target pattern the Worker must reproduce">
+    <figcaption>Target pattern <span class="muted">(only you, the Helper, see this)</span></figcaption>
+  </figure>
+  {% endif %}
+  {% if show_worker %}
+  <figure class="board">
+    <img class="board-img"
+         src="{{ url_for('study4.board_image', filename=snapshot.worker_board_image) }}"
+         alt="The Worker's current board">
+    <figcaption>Worker's progress <span class="muted">(what the Worker has placed so far)</span></figcaption>
+  </figure>
+  {% elif hide_worker %}
+  <figure class="board">
+    <div class="board-hidden" role="img"
+         aria-label="The Worker's board is hidden from you">
+      <div class="board-hidden-inner">
+        <svg class="board-hidden-icon" viewBox="0 0 24 24" width="26" height="26"
+             fill="none" stroke="currentColor" stroke-width="2"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
+          <line x1="1" y1="1" x2="23" y2="23"/>
+        </svg>
+        <span class="board-hidden-title">Hidden from you</span>
+        <span class="board-hidden-text">The AI Worker may have placed or moved
+          pieces here, but in this task you cannot see the Worker's board.</span>
+      </div>
+    </div>
+    <figcaption>Worker's progress <span class="muted">(hidden in this task)</span></figcaption>
+  </figure>
+  {% endif %}
+</div>
+

@@ -1,0 +1,86 @@
+{
+  "snapshot_id": "55a41fc5_D_P1W3_CA",
+  "dialogue_id": "55a41fc5",
+  "session_id": "55a41fc5-abbf-45e5-8b12-e2526a6ad850",
+  "condition": "D",
+  "condition_version": "D2",
+  "snapshot_type": "P1W3",
+  "arm": "CA",
+  "rating_point_index": 2,
+  "trial_label": "Practice",
+  "puzzle_number": 1,
+  "shared_view": true,
+  "view": "shared",
+  "hide_worker": false,
+  "word_count": 26,
+  "ground_truth_piece": null,
+  "placed_piece": null,
+  "worker_correct": null,
+  "helper_turn": 15,
+  "worker_turn": 16,
+  "target_board_image": "target_55a41fc5_1.png",
+  "worker_board_image": "worker_55a41fc5_D_P1W3_CA.png",
+  "show_candidates": false,
+  "practice_summary": [],
+  "practice_puzzle": 1,
+  "turns": [
+    {
+      "role": "divider",
+      "text": "Practice"
+    },
+    {
+      "role": "worker",
+      "text": "The grid is empty and I have 24 different pattern pieces available. Could you please tell me which piece to place first and at which position?"
+    },
+    {
+      "role": "helper",
+      "text": "The spiral at the top left end"
+    },
+    {
+      "role": "worker",
+      "text": "I placed the pale-pink tile with a single thick, bold black spiral winding counter-clockwise (ID 7) at the top-left corner (0, 0) as requested. I'm not sure this is the right one.",
+      "actions": [
+        "placed piece #7 at (0, 0)"
+      ]
+    },
+    {
+      "role": "helper",
+      "text": "Make the spiral go clockwise"
+    },
+    {
+      "role": "worker",
+      "text": "I see that I have placed the pale-pink tile with a single thick, bold black spiral winding counter-clockwise (ID 7) at the top left (0, 0). I'm not entirely sure this is the right one."
+    },
+    {
+      "role": "helper",
+      "text": "Place a clockwise spiral at 0,0"
+    },
+    {
+      "role": "worker",
+      "text": "There is already a pale-pink tile with a single thick, bold black spiral winding counter-clockwise (ID 7) at (0, 0). If you want a pale-pink tile with a single thin black spiral winding clockwise (ID 6), should I replace it with piece ID 6? Please confirm!"
+    },
+    {
+      "role": "helper",
+      "text": "Yes"
+    },
+    {
+      "role": "worker",
+      "text": "I am removing the pale-pink tile with a single thick, bold black spiral winding counter-clockwise (ID 7) from (0, 0) so I can replace it with the pale-pink tile with a single thin black spiral winding clockwise (ID 6) as you requested. I placed the pale-pink tile with a single thin black spiral winding clockwise (ID 6) at the top-left corner (0, 0). What should I do next to continue the spiral?",
+      "actions": [
+        "removed piece at (0, 0)",
+        "placed piece #6 at (0, 0)"
+      ]
+    },
+    {
+      "role": "helper",
+      "text": "Place a diagonal grid at 0,1"
+    },
+    {
+      "role": "worker",
+      "text": "I placed the yellow tile with a bold, coarse crosshatch diamond grid (ID 10) at position (0, 1) as you requested. What would you like next?",
+      "actions": [
+        "placed piece #10 at (0, 1)"
+      ]
+    }
+  ]
+}

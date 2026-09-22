@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Study Login</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .login-container {
+            max-width: 500px;
+            width: 100%;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            padding: 40px;
+        }
+
+        h1 {
+            color: #0078d4;
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 2em;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 0.95em;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            color: #333;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        input[type="text"],
+        input[type="password"] {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 15px;
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"]:focus,
+        input[type="password"]:focus {
+            outline: none;
+            border-color: #0078d4;
+            box-shadow: 0 0 0 3px rgba(0, 120, 212, 0.1);
+        }
+
+        .help-text {
+            font-size: 0.85em;
+            color: #666;
+            margin-top: 5px;
+            font-style: italic;
+        }
+
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            border: 1px solid #f5c6cb;
+        }
+
+        .btn-login {
+            width: 100%;
+            padding: 14px;
+            background-color: #0078d4;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-login:hover {
+            background-color: #106ebe;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+        .btn-login:active {
+            transform: translateY(0);
+        }
+
+        .info-box {
+            background: #e7f3ff;
+            border-left: 4px solid #0078d4;
+            padding: 15px;
+            margin-top: 25px;
+            border-radius: 4px;
+        }
+
+        .info-box h3 {
+            color: #0078d4;
+            margin-bottom: 8px;
+            font-size: 1em;
+        }
+
+        .info-box p {
+            color: #555;
+            font-size: 0.9em;
+            line-height: 1.5;
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <h1>🔐 Study Login</h1>
+        <p class="subtitle">Microsoft Research - Common Ground Study</p>
+
+        {% if error %}
+        <div class="error-message">
+            <strong>⚠️ Authentication Failed:</strong> {{ error }}
+        </div>
+        {% endif %}
+
+        <form method="POST" action="/login">
+            <div class="form-group">
+                <label for="user_id">User ID *</label>
+                <input 
+                    type="text" 
+                    id="user_id" 
+                    name="user_id" 
+                    required 
+                    placeholder="Enter your user ID"
+                    autocomplete="username"
+                >
+                <p class="help-text">The user ID provided to you for this study</p>
+            </div>
+
+            <div class="form-group">
+                <label for="token">Access Token *</label>
+                <input 
+                    type="password" 
+                    id="token" 
+                    name="token" 
+                    required 
+                    placeholder="Enter your access token"
+                    autocomplete="current-password"
+                >
+                <p class="help-text">The access token provided to you for this study</p>
+            </div>
+
+            <div class="form-group">
+                <label for="study_id">Study ID (Optional)</label>
+                <input 
+                    type="text" 
+                    id="study_id" 
+                    name="study_id" 
+                    placeholder="Enter the study ID"
+                    autocomplete="off"
+                    value="{{ prefill_study_id or '' }}"
+                >
+                <p class="help-text">The study identifier provided in your invitation</p>
+            </div>
+
+            <div class="form-group">
+                <label for="session_id">Session ID (Optional)</label>
+                <input 
+                    type="text" 
+                    id="session_id" 
+                    name="session_id" 
+                    placeholder="Enter a custom session ID"
+                    autocomplete="off"
+                    value="{{ prefill_session_id or '' }}"
+                >
+                <p class="help-text">Custom identifier for this session (will be auto-generated if not provided)</p>
+            </div>
+
+            <div class="form-group">
+                <label for="prolific_pid">Prolific ID (Optional)</label>
+                <input 
+                    type="text" 
+                    id="prolific_pid" 
+                    name="prolific_pid" 
+                    placeholder="Enter your Prolific ID if applicable"
+                    autocomplete="off"
+                    value="{{ prefill_prolific_pid or '' }}"
+                >
+                <p class="help-text">If you were recruited via Prolific, enter your ID here</p>
+            </div>
+
+            <button type="submit" class="btn-login">
+                Login to Study
+            </button>
+        </form>
+
+        <div class="info-box">
+            <h3>📧 Need Help?</h3>
+            <p>
+                If you don't have your login credentials or are experiencing issues, 
+                please contact the research team at <strong>sianl@microsoft.com</strong>
+            </p>
+        </div>
+    </div>
+</body>
+</html>

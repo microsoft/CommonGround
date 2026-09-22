@@ -1,0 +1,66 @@
+{
+  "snapshot_id": "f488e002_E_P1W2_CA",
+  "dialogue_id": "f488e002",
+  "session_id": "f488e002-4767-4a68-8235-f6ced51ca78b",
+  "condition": "E",
+  "condition_version": "E1",
+  "snapshot_type": "P1W2",
+  "arm": "CA",
+  "rating_point_index": 1,
+  "trial_label": "Practice",
+  "puzzle_number": 1,
+  "shared_view": false,
+  "view": "nonshared",
+  "hide_worker": true,
+  "word_count": 36,
+  "ground_truth_piece": null,
+  "placed_piece": null,
+  "worker_correct": null,
+  "helper_turn": 9,
+  "worker_turn": 10,
+  "target_board_image": "target_f488e002_1.png",
+  "worker_board_image": "worker_f488e002_E_P1W2_CA.png",
+  "show_candidates": false,
+  "practice_summary": [],
+  "practice_puzzle": 1,
+  "turns": [
+    {
+      "role": "divider",
+      "text": "Practice"
+    },
+    {
+      "role": "worker",
+      "text": "The board is currently empty and I have 24 unique patterned pieces available. Which piece should I place first and where should I place it? Please specify the piece ID and the grid position (column, row)."
+    },
+    {
+      "role": "helper",
+      "text": "What is you objective? I am not clear from the instructions."
+    },
+    {
+      "role": "worker",
+      "text": "My objective is to recreate a hidden target pattern on the 6x6 grid by placing the correct pieces (shown in your second image) into the correct positions. I cannot see the target pattern\u2014only you, as the Helper, know what it should look like. You tell me which piece (by ID and visual description) to place in which cell (by coordinates), and I will follow your guidance to build the pattern accurately. Let me know how you'd like to start!"
+    },
+    {
+      "role": "helper",
+      "text": "ok, please place the piece with a spiral on the top left corner"
+    },
+    {
+      "role": "worker",
+      "text": "I placed the pale-pink tile with a single thin black spiral winding clockwise (ID 6) in the top-left corner at position (0, 0). I'm not completely sure that this is the right choice.",
+      "actions": [
+        "placed piece #6 at (0, 0)"
+      ]
+    },
+    {
+      "role": "helper",
+      "text": "next, please a pink piece with 5 parallel jagged lines next to that first piece. Please return the coordinates"
+    },
+    {
+      "role": "worker",
+      "text": "I placed the white tile with sharp horizontal zig-zag rows (ID 12) at position (1, 0), which is directly to the right of the first piece at the top row. What should I do next?",
+      "actions": [
+        "placed piece #12 at (1, 0)"
+      ]
+    }
+  ]
+}

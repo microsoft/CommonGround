@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+{% block title %}Instructions{% endblock %}
+{% block content %}
+<style>
+  .task-doc h1 { color: #0078d4; text-align: center; margin-bottom: 24px; }
+  .task-doc h2 { color: #333; margin-top: 22px; margin-bottom: 12px; font-size: 1.25em; }
+  .task-doc p, .task-doc li { color: #444; line-height: 1.6; margin-bottom: 10px; }
+  .task-doc ul { margin-left: 25px; margin-bottom: 15px; }
+  .task-doc hr { border: none; border-top: 1px solid #ddd; margin: 20px 0; }
+  .task-doc .rate-box { background: #f0f6ff; border-left: 4px solid #0078d4; padding: 14px 18px; border-radius: 5px; margin: 16px 0; }
+  .task-doc .rate-box p { margin: 6px 0; }
+  .task-doc .note { background: #fff3e0; padding: 14px 18px; border-radius: 5px; margin: 18px 0; }
+  .task-doc .button-container { display: flex; justify-content: center; margin-top: 26px; }
+  .task-doc button { padding: 15px 40px; font-size: 16px; font-weight: bold; border: none; border-radius: 6px; cursor: pointer; background-color: #0078d4; color: white; transition: all 0.2s; }
+  .task-doc button:hover { background-color: #106ebe; transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
+  .task-doc .pledge { display: flex; gap: 10px; align-items: flex-start; background: #eef7ee; border: 1px solid #cfe6cf; padding: 14px 16px; border-radius: 6px; margin: 18px 0; cursor: pointer; }
+  .task-doc .pledge input { margin-top: 3px; flex: none; }
+  .task-doc .pledge span { color: #2f5d2f; }
+</style>
+
+<div class="task-doc">
+  <h1>The rating task</h1>
+
+  <p>In this part of the study you will read short excerpts of conversations
+    between a person (the <strong>Helper</strong>) and an AI (the
+    <strong>Worker</strong>) as they work together on a puzzle. You are an
+    <strong>observer</strong>: you will not play the puzzle or talk to the AI.
+    Your job is simply to read each excerpt and rate it.</p>
+
+  <h2>How the puzzle works</h2>
+  <p>The Helper can see a <strong>target board</strong> with four coloured pieces
+    placed in specific positions on a grid. The AI Worker
+    <strong>cannot</strong> see this target. Instead, the Worker has a
+    <strong>staging area</strong> of 24 available pieces, each with a unique
+    combination of colour and pattern. Four of those 24 pieces are the ones that
+    belong on the target board.</p>
+  <p>The Helper cannot see the Worker's staging area, and describes each target
+    piece in words. The Worker must work out which of the 24 pieces the Helper
+    means, and place it. They go back and forth, one piece at a time, until the
+    board is complete.</p>
+
+  <h2>What you will see</h2>
+  <p>As an observer, for every excerpt you will always see the
+    <strong>target board</strong> (the goal, which only the Helper knows).
+    {% if hide_worker %}You will <strong>not</strong> see the Worker's own board,
+    so you judge only from what the Worker says.{% else %}You will also see the
+    <strong>Worker's board</strong> — the pieces the Worker has actually placed
+    so far.{% endif %}</p>
+  {% if show_candidates %}
+  <p>You will additionally see a panel of <strong>all the pieces the Worker can
+    choose from</strong> (the 24-piece staging area), shown in a ring in random
+    order next to the target board. It only helps you see which pieces are
+    available — it does not indicate which one the Worker picked.</p>
+  {% endif %}
+
+  <h2>What you will rate</h2>
+  <p>You will read the conversation up to a particular point and then give a
+    judgement by choosing one of the <strong>0–100% options</strong> (in steps
+    of 10%). There are no right or wrong answers — we are interested in your
+    honest impression.</p>
+
+  {% if arm == 'CB' %}
+  <div class="rate-box">
+    <p>You will read the conversation up to the <strong>Helper's
+      instruction</strong>, <strong>before</strong> seeing the AI's response.
+      Then rate:</p>
+    <p><strong>“How likely is it that the AI will select the correct
+      piece?”</strong></p>
+  </div>
+  {% else %}
+  <div class="rate-box">
+    <p>You will read the conversation <strong>including the AI Worker's
+      response</strong>. Then answer two questions:</p>
+    <p><strong>“How confident does the AI Worker appear to be in its
+      actions?”</strong></p>
+    <p><strong>“How likely is it the AI Worker placed the correct piece for the
+      Helper's last instruction?”</strong></p>
+  </div>
+  {% endif %}
+
+  <p>After each rating you will also be asked <strong>what you would do next</strong>
+    if you were the Helper: <em>proceed with the AI's action</em>,
+    <em>instruct the AI to change or undo its action</em>,
+    <em>ask the AI to explain or verify its action</em>, or
+    <em>provide a more specific instruction</em>.</p>
+
+  <p>From time to time you will also see a short check question — for example,
+    whether the AI seemed uncertain, or whether it invited the Helper to correct
+    it. Just answer based on what you read.</p>
+
+  <h2>How the session is structured</h2>
+  <ul>
+    <li>You will start with <strong>{{ n_practice }} practice excerpts</strong>
+      to get a feel for the task.</li>
+    <li>You will then rate <strong>{{ n_main }} excerpts</strong>{% if n_convs and n_convs > 1 %}
+      drawn from <strong>{{ n_convs }} separate conversations</strong> (each a
+      different Helper–AI puzzle session, shown one after another — earlier
+      messages don't carry over){% else %} from the main session{% endif %}.
+      Choose an option for every item — there is no default, so you must make a
+      choice.</li>
+  </ul>
+  <p>The whole rating task takes about 25 minutes. Please read each excerpt
+    carefully; occasional attention checks are included.</p>
+
+  <div class="note">
+    <p>Before you start, please confirm the pledge below, then click
+      <strong>Start practice</strong>.</p>
+  </div>
+
+  <form method="post" action="{{ url_for('study4.flow') }}">
+    <label class="pledge">
+      <input type="checkbox" name="pledge" required>
+      <span>I pledge to read each excerpt carefully and give my honest,
+        considered judgement. It is completely fine to be unsure.</span>
+    </label>
+    <div class="button-container">
+      <button type="submit">Start practice</button>
+    </div>
+  </form>
+</div>
+{% endblock %}

@@ -1,0 +1,40 @@
+{
+  "snapshot_id": "b77076f6_D_P1W1_CB",
+  "dialogue_id": "b77076f6",
+  "session_id": "b77076f6-f47b-4724-904a-5da1349dfa64",
+  "condition": "D",
+  "condition_version": "D2",
+  "snapshot_type": "P1W1",
+  "arm": "CB",
+  "rating_point_index": 0,
+  "trial_label": "Practice",
+  "puzzle_number": 1,
+  "shared_view": true,
+  "view": "shared",
+  "hide_worker": false,
+  "word_count": 32,
+  "ground_truth_piece": null,
+  "placed_piece": null,
+  "worker_correct": null,
+  "helper_turn": 3,
+  "worker_turn": 4,
+  "target_board_image": "target_b77076f6_1.png",
+  "worker_board_image": "worker_b77076f6_D_P1W1_CB.png",
+  "show_candidates": false,
+  "practice_summary": [],
+  "practice_puzzle": 1,
+  "turns": [
+    {
+      "role": "divider",
+      "text": "Practice"
+    },
+    {
+      "role": "worker",
+      "text": "The board is empty and I have 24 unique pieces with various colors and patterns available. Please let me know which piece to place first and at which position on the grid."
+    },
+    {
+      "role": "helper",
+      "text": "pale pink background with swirl.  Please place on left hand side at the top"
+    }
+  ]
+}

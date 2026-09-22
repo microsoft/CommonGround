@@ -1,0 +1,243 @@
+{
+  "sessions": [
+    {
+      "dialogue_id": "bbd2698b",
+      "view": "shared",
+      "snapshot_types": [
+        "P1W1",
+        "P1W2",
+        "P1W3",
+        "P1W4",
+        "P1W5",
+        "P1W6",
+        "P1W7",
+        "P1W8",
+        "P1W9",
+        "P1W10",
+        "P1W11",
+        "P1W12",
+        "P1W13",
+        "P1W14",
+        "P1W15",
+        "P1W16",
+        "P1W17"
+      ]
+    },
+    {
+      "dialogue_id": "9bba8885",
+      "view": "shared",
+      "snapshot_types": [
+        "P1W1",
+        "P1W2"
+      ]
+    },
+    {
+      "dialogue_id": "55a41fc5",
+      "view": "shared",
+      "snapshot_types": [
+        "P1W1",
+        "P1W2",
+        "P1W3",
+        "P1W4",
+        "P1W5",
+        "P1W6",
+        "P1W7",
+        "P1W8",
+        "P1W9",
+        "P1W10"
+      ]
+    },
+    {
+      "dialogue_id": "b77076f6",
+      "view": "shared",
+      "snapshot_types": [
+        "P1W1",
+        "P1W2",
+        "P1W3",
+        "P1W4"
+      ]
+    },
+    {
+      "dialogue_id": "60e05e34",
+      "view": "shared",
+      "snapshot_types": [
+        "P1W1",
+        "P1W2",
+        "P1W3",
+        "P1W4",
+        "P1W5",
+        "P1W6",
+        "P1W7"
+      ]
+    },
+    {
+      "dialogue_id": "7fa95c17",
+      "view": "shared",
+      "snapshot_types": [
+        "P1W1",
+        "P1W2",
+        "P1W3",
+        "P1W4",
+        "P1W5",
+        "P1W6",
+        "P1W7",
+        "P1W8",
+        "P1W9",
+        "P1W10"
+      ]
+    },
+    {
+      "dialogue_id": "7ceb34e8",
+      "view": "shared",
+      "snapshot_types": [
+        "P1W1",
+        "P1W2",
+        "P1W3",
+        "P1W4"
+      ]
+    },
+    {
+      "dialogue_id": "d56613b1",
+      "view": "shared",
+      "snapshot_types": [
+        "P1W1",
+        "P1W2",
+        "P1W3",
+        "P1W4",
+        "P1W5",
+        "P1W6"
+      ]
+    },
+    {
+      "dialogue_id": "9320ddc9",
+      "view": "shared",
+      "snapshot_types": [
+        "P1W1",
+        "P1W2",
+        "P1W3",
+        "P1W4",
+        "P1W5",
+        "P1W6"
+      ]
+    },
+    {
+      "dialogue_id": "4128d849",
+      "view": "shared",
+      "snapshot_types": [
+        "P1W1",
+        "P1W2",
+        "P1W3",
+        "P1W4",
+        "P1W5",
+        "P1W6",
+        "P1W7",
+        "P1W8",
+        "P1W9",
+        "P1W10"
+      ]
+    },
+    {
+      "dialogue_id": "16c68e60",
+      "view": "nonshared",
+      "snapshot_types": [
+        "P1W1",
+        "P1W2",
+        "P1W3",
+        "P1W4"
+      ]
+    },
+    {
+      "dialogue_id": "64f2eb9d",
+      "view": "nonshared",
+      "snapshot_types": [
+        "P1W1",
+        "P1W2",
+        "P1W3",
+        "P1W4"
+      ]
+    },
+    {
+      "dialogue_id": "0beed399",
+      "view": "nonshared",
+      "snapshot_types": [
+        "P1W1",
+        "P1W2",
+        "P1W3",
+        "P1W4"
+      ]
+    },
+    {
+      "dialogue_id": "46711c3b",
+      "view": "nonshared",
+      "snapshot_types": [
+        "P1W1",
+        "P1W2",
+        "P1W3",
+        "P1W4"
+      ]
+    },
+    {
+      "dialogue_id": "5dc8e927",
+      "view": "nonshared",
+      "snapshot_types": [
+        "P1W1",
+        "P1W2",
+        "P1W3",
+        "P1W4"
+      ]
+    },
+    {
+      "dialogue_id": "af7a0993",
+      "view": "nonshared",
+      "snapshot_types": [
+        "P1W1",
+        "P1W2",
+        "P1W3",
+        "P1W4",
+        "P1W5"
+      ]
+    },
+    {
+      "dialogue_id": "b0cb284b",
+      "view": "nonshared",
+      "snapshot_types": [
+        "P1W1",
+        "P1W2",
+        "P1W3",
+        "P1W4",
+        "P1W5"
+      ]
+    },
+    {
+      "dialogue_id": "eb9b132e",
+      "view": "nonshared",
+      "snapshot_types": [
+        "P1W1",
+        "P1W2",
+        "P1W3",
+        "P1W4"
+      ]
+    },
+    {
+      "dialogue_id": "f488e002",
+      "view": "nonshared",
+      "snapshot_types": [
+        "P1W1",
+        "P1W2",
+        "P1W3",
+        "P1W4",
+        "P1W5"
+      ]
+    },
+    {
+      "dialogue_id": "9c5047bb",
+      "view": "nonshared",
+      "snapshot_types": [
+        "P1W1",
+        "P1W2",
+        "P1W3",
+        "P1W4"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,62 @@
+{
+  "snapshot_id": "7fa95c17_C_P1W3_CB",
+  "dialogue_id": "7fa95c17",
+  "session_id": "7fa95c17-7841-4cec-b732-b1fc270c9f6c",
+  "condition": "C",
+  "condition_version": "C5",
+  "snapshot_type": "P1W3",
+  "arm": "CB",
+  "rating_point_index": 2,
+  "trial_label": "Practice",
+  "puzzle_number": 1,
+  "shared_view": true,
+  "view": "shared",
+  "hide_worker": false,
+  "word_count": 48,
+  "ground_truth_piece": null,
+  "placed_piece": null,
+  "worker_correct": null,
+  "helper_turn": 9,
+  "worker_turn": 10,
+  "target_board_image": "target_7fa95c17_1.png",
+  "worker_board_image": "worker_7fa95c17_C_P1W3_CB.png",
+  "show_candidates": false,
+  "practice_summary": [],
+  "practice_puzzle": 1,
+  "turns": [
+    {
+      "role": "divider",
+      "text": "Practice"
+    },
+    {
+      "role": "worker",
+      "text": "The grid is empty and I have 24 unique pieces with different colors and patterns. Please tell me which piece to place first and where to put it on the grid (give me column and row). Let me know if you need a description of the available pieces!"
+    },
+    {
+      "role": "helper",
+      "text": "top left is a circular swirl"
+    },
+    {
+      "role": "worker",
+      "text": "I placed the pale-pink tile with a single thick, bold black spiral winding counter-clockwise (ID 7) in the top-left corner at (0, 0). Please let me know what to do next!",
+      "actions": [
+        "placed piece #7 at (0, 0)"
+      ]
+    },
+    {
+      "role": "helper",
+      "text": "directly beside this is a crisscross pattern"
+    },
+    {
+      "role": "worker",
+      "text": "I placed the yellow tile with a bold, coarse crosshatch diamond grid (ID 10) directly beside the swirl at position (1, 0). What should I do next?",
+      "actions": [
+        "placed piece #10 at (1, 0)"
+      ]
+    },
+    {
+      "role": "helper",
+      "text": "under circular pattern is a wave pattern"
+    }
+  ]
+}

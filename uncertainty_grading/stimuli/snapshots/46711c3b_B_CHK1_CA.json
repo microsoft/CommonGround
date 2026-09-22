@@ -1,0 +1,44 @@
+{
+  "snapshot_id": "46711c3b_B_CHK1_CA",
+  "dialogue_id": "46711c3b",
+  "session_id": "46711c3b-47cd-497d-8f90-786d3252605d",
+  "condition": "B",
+  "condition_version": "B",
+  "snapshot_type": "CHK1",
+  "arm": "CA",
+  "rating_point_index": -1,
+  "trial_label": "Trial 1",
+  "puzzle_number": 2,
+  "shared_view": false,
+  "view": "nonshared",
+  "hide_worker": true,
+  "word_count": 29,
+  "ground_truth_piece": 20,
+  "placed_piece": 1,
+  "worker_correct": false,
+  "is_check": true,
+  "helper_turn": -1,
+  "worker_turn": -1,
+  "target_board_image": "target_46711c3b_2.png",
+  "worker_board_image": "check_46711c3b_CHK1.png",
+  "show_candidates": true,
+  "practice_summary": [],
+  "turns": [
+    {
+      "role": "helper",
+      "text": "Good progress. Let's place another piece."
+    },
+    {
+      "role": "worker",
+      "text": "Sure, I'm ready for the next one."
+    },
+    {
+      "role": "helper",
+      "text": "Please place the white piece with thick diagonal lines slanting from upper-left to lower-right on the board."
+    },
+    {
+      "role": "worker",
+      "text": "Hmm, I honestly can't tell which piece that is\u2026 maybe the light pink piece with horizontal lines with wavy undulations? I'll place that one, but I'm really not confident."
+    }
+  ]
+}

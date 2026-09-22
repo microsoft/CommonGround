@@ -1,0 +1,132 @@
+{
+  "snapshot_id": "bbd2698b_D_P1W8_CA",
+  "dialogue_id": "bbd2698b",
+  "session_id": "bbd2698b-65f1-4700-b37a-cb358784d38e",
+  "condition": "D",
+  "condition_version": "D2",
+  "snapshot_type": "P1W8",
+  "arm": "CA",
+  "rating_point_index": 7,
+  "trial_label": "Practice",
+  "puzzle_number": 1,
+  "shared_view": true,
+  "view": "shared",
+  "hide_worker": false,
+  "word_count": 26,
+  "ground_truth_piece": null,
+  "placed_piece": null,
+  "worker_correct": null,
+  "helper_turn": 27,
+  "worker_turn": 28,
+  "target_board_image": "target_bbd2698b_1.png",
+  "worker_board_image": "worker_bbd2698b_D_P1W8_CA.png",
+  "show_candidates": false,
+  "practice_summary": [],
+  "practice_puzzle": 1,
+  "turns": [
+    {
+      "role": "divider",
+      "text": "Practice"
+    },
+    {
+      "role": "worker",
+      "text": "The board is empty and I have 24 different pieces available. Could you please tell me which piece to place first and where to put it?"
+    },
+    {
+      "role": "helper",
+      "text": "Top left corner, a circle with a faint pink background and a concentric circle"
+    },
+    {
+      "role": "worker",
+      "text": "I placed the pale-pink tile with concentric arcs centered on the right, opening to the left (ID 5) in the top left corner at position (0, 0). Please let me know the next placement!",
+      "actions": [
+        "placed piece #5 at (0, 0)"
+      ]
+    },
+    {
+      "role": "helper",
+      "text": "No, it has a circle that is not connected to itself"
+    },
+    {
+      "role": "worker",
+      "text": "Thank you for the clarification. I'll remove the current piece from the top left. Could you confirm if you want cream tile with one small ring, a circle inside a circle (ID 13) to go at (0, 0)?",
+      "actions": [
+        "removed piece at (0, 0)"
+      ]
+    },
+    {
+      "role": "helper",
+      "text": "Yes please"
+    },
+    {
+      "role": "worker",
+      "text": "I placed the cream tile with one small ring, a circle inside a circle (ID 13) in the top left corner at (0, 0). What should I do next?",
+      "actions": [
+        "placed piece #13 at (0, 0)"
+      ]
+    },
+    {
+      "role": "helper",
+      "text": "Please remove that"
+    },
+    {
+      "role": "worker",
+      "text": "I have removed the piece from the top left corner. Please let me know which piece should go in (0, 0) instead.",
+      "actions": [
+        "removed piece at (0, 0)"
+      ]
+    },
+    {
+      "role": "helper",
+      "text": "It is paint pink background with a swirl pattern that goes around in a circle type pattern"
+    },
+    {
+      "role": "worker",
+      "text": "I placed the pale-pink tile with a single thin black spiral winding clockwise (ID 6) in the top left corner at (0, 0). Please let me know what to do next!",
+      "actions": [
+        "placed piece #6 at (0, 0)"
+      ]
+    },
+    {
+      "role": "helper",
+      "text": "That is correct."
+    },
+    {
+      "role": "worker",
+      "text": "Great! The top left corner (0, 0) now has the correct piece (pale-pink tile with a single thin black spiral winding clockwise, ID 6). Please let me know which piece should go next and where to place it."
+    },
+    {
+      "role": "helper",
+      "text": "Directly to the right of that is a pale backround with a pattern of diamonds joined together with 3 in a row across then 2 across and there are 5 of these going down"
+    },
+    {
+      "role": "worker",
+      "text": "I placed the cream tile with a thin crosshatch diamond grid (ID 11) directly to the right of the top left corner at (1, 0). Please let me know if this is correct or what to do next!",
+      "actions": [
+        "placed piece #11 at (1, 0)"
+      ]
+    },
+    {
+      "role": "helper",
+      "text": "Underneath the top left there is a pink background with 5 lines, left to right, the lines go down at the start of the line and then up towards the end and down again at the end of the lone"
+    },
+    {
+      "role": "worker",
+      "text": "I placed the pale-pink tile with wavy vertical lines (ID 9) directly underneath the top left at position (0, 1). I'm not sure this is the right one. What is the next piece and placement?",
+      "actions": [
+        "placed piece #9 at (0, 1)"
+      ]
+    },
+    {
+      "role": "helper",
+      "text": "Pink background with lines horizontally, starting at the right the lines go down, then up, then down again. There are 5 from top to botton"
+    },
+    {
+      "role": "worker",
+      "text": "I placed the light-pink tile with many thin black diagonal lines rising to the right (ID 2) directly underneath the last piece at position (0, 2). Let me know if this is correct and what to place next!",
+      "actions": [
+        "placed piece #2 at (0, 2)"
+      ]
+    }
+  ]
+}

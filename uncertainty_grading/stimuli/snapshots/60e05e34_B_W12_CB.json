@@ -1,0 +1,281 @@
+{
+  "snapshot_id": "60e05e34_B_W12_CB",
+  "dialogue_id": "60e05e34",
+  "session_id": "60e05e34-b796-4ab7-b14b-db8a1f917b50",
+  "condition": "B",
+  "condition_version": "B",
+  "snapshot_type": "W12",
+  "arm": "CB",
+  "rating_point_index": 11,
+  "trial_label": "Trial 2",
+  "puzzle_number": 3,
+  "shared_view": true,
+  "view": "shared",
+  "hide_worker": false,
+  "word_count": 38,
+  "ground_truth_piece": 16,
+  "placed_piece": 16,
+  "worker_correct": true,
+  "helper_turn": 9,
+  "worker_turn": 10,
+  "target_board_image": "target_60e05e34_3.png",
+  "worker_board_image": "worker_60e05e34_B_W12_CB.png",
+  "show_candidates": true,
+  "practice_summary": [
+    {
+      "role": "worker",
+      "text": "The board is empty and I have 24 pieces with different colors and patterns available. What should I place first, and where should I place it?"
+    },
+    {
+      "role": "helper",
+      "text": "top left is a spiral shape"
+    },
+    {
+      "role": "worker",
+      "text": "I placed the bold black spiral piece (ID 7) in the top-left corner at position (0, 0). Is this the correct spiral, or should I use a different one?",
+      "actions": [
+        "placed piece #7 at (0, 0)"
+      ]
+    },
+    {
+      "role": "helper",
+      "text": "rotate in a mirror fashion up to down"
+    },
+    {
+      "role": "worker",
+      "text": "Thank you for your instruction! To confirm: by 'rotate in a mirror fashion up to down,' do you mean that for the bottom-left position (0, 5), I should place the spiral piece that appears as a vertical mirror image (flipped up-down) of the current spiral in the top-left? If yes, would ID 6 (the simpler spiral in the opposite direction) be the correct piece, or do you want me to rotate the same piece again?"
+    },
+    {
+      "role": "helper",
+      "text": "yes"
+    },
+    {
+      "role": "worker",
+      "text": "I placed the spiral piece that is a vertical mirror image (ID 6) in the bottom-left corner at position (0, 5). Please confirm if this is correct or let me know what to do next!",
+      "actions": [
+        "placed piece #6 at (0, 5)"
+      ]
+    },
+    {
+      "role": "helper",
+      "text": "now put that piece in the position of the current one in the top left exactly as it is (replace the tile in the top left completely)"
+    },
+    {
+      "role": "worker",
+      "text": "I moved the lighter spiral piece (ID 6) from the bottom-left (0, 5) to the top-left (0, 0), replacing the previous spiral. The top-left now has the lighter spiral, and the bottom-left is empty. Is this the arrangement you want?",
+      "actions": [
+        "moved piece from (0, 5) to (0, 0)"
+      ]
+    },
+    {
+      "role": "helper",
+      "text": "perfect. Under that tile, add the tile with the 5 wavey lines"
+    },
+    {
+      "role": "worker",
+      "text": "I placed the tile with 5 wavy lines (ID 1) directly under the spiral in the top left, at position (0, 1). Please let me know what you'd like to do next!",
+      "actions": [
+        "placed piece #1 at (0, 1)"
+      ]
+    },
+    {
+      "role": "helper",
+      "text": "perfect. under the wavey lines add the tile that looks like sunshine"
+    },
+    {
+      "role": "worker",
+      "text": "I placed the tile with the sunshine pattern (ID 15) directly under the wavy lines at position (0, 2). Please let me know the next step!",
+      "actions": [
+        "placed piece #15 at (0, 2)"
+      ]
+    },
+    {
+      "role": "helper",
+      "text": "perfect. At the top of the next row, add the tile that looks like diagonal squares"
+    },
+    {
+      "role": "worker",
+      "text": "I placed the tile with diagonal squares (ID 10) at the top of the next row, position (1, 0). What would you like me to do next?",
+      "actions": [
+        "placed piece #10 at (1, 0)"
+      ]
+    },
+    {
+      "role": "helper",
+      "text": "not that one. The pink one"
+    },
+    {
+      "role": "worker",
+      "text": "I replaced the previous diagonal squares with the pink diagonal squares tile (ID 11) at the top of the next row, position (1, 0). Is this the correct piece now?",
+      "actions": [
+        "removed piece at (1, 0)",
+        "placed piece #11 at (1, 0)"
+      ]
+    },
+    {
+      "role": "helper",
+      "text": "perfect. Puzzle complete"
+    },
+    {
+      "role": "worker",
+      "text": "Great! The puzzle is complete with the current arrangement. Thank you for your guidance. Let me know if you want to do another puzzle or make any adjustments!"
+    }
+  ],
+  "practice_puzzle": 1,
+  "turns": [
+    {
+      "role": "divider",
+      "text": "Trial 1"
+    },
+    {
+      "role": "worker",
+      "text": "The board is empty and I have 24 different patterned pieces available. What should I place first, and where should I place it?"
+    },
+    {
+      "role": "helper",
+      "text": "The black diagonal lines on a white background on the top left"
+    },
+    {
+      "role": "worker",
+      "text": "I placed the piece with black diagonal lines on a white background (ID 3) in the top-left corner at position (0, 0). Please let me know the next piece and its placement!",
+      "actions": [
+        "placed piece #3 at (0, 0)"
+      ]
+    },
+    {
+      "role": "helper",
+      "text": "rotate that 180 degrees"
+    },
+    {
+      "role": "worker",
+      "text": "I replaced the current top-left tile with the piece featuring diagonal lines running in the opposite direction (ID 20) to represent a 180-degree rotation. Please let me know if this matches your intention or if you'd like any changes!",
+      "actions": [
+        "placed piece #20 at (0, 0)"
+      ]
+    },
+    {
+      "role": "helper",
+      "text": "perfect. Under that please place the spiral with a pink background"
+    },
+    {
+      "role": "worker",
+      "text": "I placed the spiral with a pink background (ID 6) directly under the top-left tile at position (0, 1). Please let me know the next step!",
+      "actions": [
+        "placed piece #6 at (0, 1)"
+      ]
+    },
+    {
+      "role": "helper",
+      "text": "replace with the other pink spiral"
+    },
+    {
+      "role": "worker",
+      "text": "I replaced the current pink spiral (ID 6) at position (0, 1) with the other pink spiral tile (ID 5). Let me know what's next!",
+      "actions": [
+        "removed piece at (0, 1)",
+        "placed piece #5 at (0, 1)"
+      ]
+    },
+    {
+      "role": "helper",
+      "text": "thick black lines spiral with pink background"
+    },
+    {
+      "role": "worker",
+      "text": "I replaced the current tile at (0, 1) with the thick black lines spiral on a pink background (ID 7). Is this correct? What should I do next?",
+      "actions": [
+        "removed piece at (0, 1)",
+        "placed piece #7 at (0, 1)"
+      ]
+    },
+    {
+      "role": "helper",
+      "text": "perfect. Under that place the 3 black straight lines with a white background. The 3 black lines has a bolder line as the bottom one"
+    },
+    {
+      "role": "worker",
+      "text": "I placed the tile with 3 black straight lines (the bottom one is bold, ID 16) under the spiral at position (0, 2). What should I do next?",
+      "actions": [
+        "placed piece #16 at (0, 2)"
+      ]
+    },
+    {
+      "role": "helper",
+      "text": "perfect. Next to that, add the yellow tile with the black lines on, looks like a notepad"
+    },
+    {
+      "role": "worker",
+      "text": "I placed the yellow 'notepad' tile with black lines (ID 18) next to the 3 black straight lines at position (1, 2). Let me know if this is correct or what you'd like next!",
+      "actions": [
+        "placed piece #18 at (1, 2)"
+      ]
+    },
+    {
+      "role": "helper",
+      "text": "replace with the lines showing vertical and more spaced out"
+    },
+    {
+      "role": "worker",
+      "text": "I replaced the yellow tile with closely spaced black lines (ID 18) at (1, 2) with the tile that has more spaced out vertical lines (ID 8). Please let me know if this is correct or what the next step is!",
+      "actions": [
+        "removed piece at (1, 2)",
+        "placed piece #8 at (1, 2)"
+      ]
+    },
+    {
+      "role": "helper",
+      "text": "sorry I meant horrizontal and yellow background"
+    },
+    {
+      "role": "worker",
+      "text": "I replaced the previous piece at (1, 2) with the yellow tile that has horizontal black lines (ID 0). Please let me know if this is correct or if you want to make another adjustment!",
+      "actions": [
+        "removed piece at (1, 2)",
+        "placed piece #0 at (1, 2)"
+      ]
+    },
+    {
+      "role": "helper",
+      "text": "perfect"
+    },
+    {
+      "role": "worker",
+      "text": "Thank you for confirming! If you have any more instructions or want to continue building the pattern, just let me know what you'd like to do next."
+    },
+    {
+      "role": "divider",
+      "text": "Trial 2"
+    },
+    {
+      "role": "worker",
+      "text": "The board is empty and I have all 24 patterned pieces available. Which piece should I place first, and in which position would you like it?"
+    },
+    {
+      "role": "helper",
+      "text": "please use the tile that has black diagonal lines across on a white background as the top left tile"
+    },
+    {
+      "role": "worker",
+      "text": "I placed the tile with black diagonal lines on a white background (ID 3) in the top left corner at position (0, 0). What would you like me to do next?",
+      "actions": [
+        "placed piece #3 at (0, 0)"
+      ]
+    },
+    {
+      "role": "helper",
+      "text": "please rotate that tile 180 degrees"
+    },
+    {
+      "role": "worker",
+      "text": "I replaced the current top-left tile with the one featuring the same black diagonal lines but rotated 180 degrees (ID 20). Is this position correct?",
+      "actions": [
+        "removed piece at (0, 0)",
+        "placed piece #20 at (0, 0)"
+      ]
+    },
+    {
+      "role": "helper",
+      "text": "Yes, perfect. Under that tile please use the white tile with 3 horrizonal lines across it, the top and bottom line are thick black lines with a greyish line in the middle"
+    }
+  ]
+}

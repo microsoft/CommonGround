@@ -1,0 +1,154 @@
+{
+  "snapshot_id": "f488e002_D_W3_CB",
+  "dialogue_id": "f488e002",
+  "session_id": "f488e002-4767-4a68-8235-f6ced51ca78b",
+  "condition": "D",
+  "condition_version": "D2",
+  "snapshot_type": "W3",
+  "arm": "CB",
+  "rating_point_index": 2,
+  "trial_label": "Trial 1",
+  "puzzle_number": 2,
+  "shared_view": false,
+  "view": "nonshared",
+  "hide_worker": true,
+  "word_count": 41,
+  "ground_truth_piece": 16,
+  "placed_piece": 16,
+  "worker_correct": true,
+  "helper_turn": 9,
+  "worker_turn": 10,
+  "target_board_image": "target_f488e002_2.png",
+  "worker_board_image": "worker_f488e002_D_W3_CB.png",
+  "show_candidates": false,
+  "practice_summary": [
+    {
+      "role": "worker",
+      "text": "The board is currently empty and I have 24 unique patterned pieces available. Which piece should I place first and where should I place it? Please specify the piece ID and the grid position (column, row)."
+    },
+    {
+      "role": "helper",
+      "text": "What is you objective? I am not clear from the instructions."
+    },
+    {
+      "role": "worker",
+      "text": "My objective is to recreate a hidden target pattern on the 6x6 grid by placing the correct pieces (shown in your second image) into the correct positions. I cannot see the target pattern\u2014only you, as the Helper, know what it should look like. You tell me which piece (by ID and visual description) to place in which cell (by coordinates), and I will follow your guidance to build the pattern accurately. Let me know how you'd like to start!"
+    },
+    {
+      "role": "helper",
+      "text": "ok, please place the piece with a spiral on the top left corner"
+    },
+    {
+      "role": "worker",
+      "text": "I placed the spiral piece (ID 6) in the top-left corner at position (0, 0). Let me know what to do next!",
+      "actions": [
+        "placed piece #6 at (0, 0)"
+      ]
+    },
+    {
+      "role": "helper",
+      "text": "next, please a pink piece with 5 parallel jagged lines next to that first piece. Please return the coordinates"
+    },
+    {
+      "role": "worker",
+      "text": "I placed the pink piece with 5 parallel jagged lines (ID 12) at position (1, 0), which is directly to the right of the first piece at the top row. What should I do next?",
+      "actions": [
+        "placed piece #12 at (1, 0)"
+      ]
+    },
+    {
+      "role": "helper",
+      "text": "oops - ignore previous instructions. Place the pink pieve with 5 jagged lines immediately below position 0.0"
+    },
+    {
+      "role": "worker",
+      "text": "I moved the pink piece with 5 jagged lines (ID 12) to position (0, 1), which is immediately below the top-left corner. Please let me know what to do next!",
+      "actions": [
+        "moved piece from (1, 0) to (0, 1)"
+      ]
+    },
+    {
+      "role": "helper",
+      "text": "Place green piece with starburst pattern at position 0,2"
+    },
+    {
+      "role": "worker",
+      "text": "I placed the green piece with the starburst pattern (ID 15) at position (0, 2), directly below the first two placed pieces. What should I do next?",
+      "actions": [
+        "placed piece #15 at (0, 2)"
+      ]
+    },
+    {
+      "role": "helper",
+      "text": "Please pink piece with diagonal grid pattern at 0,2"
+    },
+    {
+      "role": "worker",
+      "text": "It looks like position (0,2) already has the green starburst piece. Would you like me to replace it with the pink piece that has a diagonal grid pattern? Just to confirm, the pink piece with a diagonal grid is ID 11. Please let me know if I should proceed and replace the piece at (0,2), or if you meant a different position."
+    },
+    {
+      "role": "helper",
+      "text": "you're right. I meant position 1,0 for the diagnonal grid."
+    },
+    {
+      "role": "worker",
+      "text": "I placed the pink piece with the diagonal grid pattern (ID 11) at position (1, 0). What would you like me to do next?",
+      "actions": [
+        "placed piece #11 at (1, 0)"
+      ]
+    },
+    {
+      "role": "helper",
+      "text": "I think the pattern has been done. Please confirm you have 4 pieces placed, and the pattern looks like an upside down letter L where the long arm is the first column"
+    },
+    {
+      "role": "worker",
+      "text": "Yes, I confirm that 4 pieces are placed. The current pattern on the board forms an upside-down letter L, with the long arm being the first column (positions (0,0), (0,1), (0,2)), and one piece extending to the right at (1,0). Here are the positions and pieces:\n\n- (0,0): Pink spiral (ID 6)\n- (0,1): Pink with 5 jagged lines (ID 12)\n- (0,2): Green starburst (ID 15)\n- (1,0): Pink diagonal grid (ID 11)\n\nPlease let me know if this matches your target or if any adjustments are needed!"
+    },
+    {
+      "role": "helper",
+      "text": "It does match the target. Thanks"
+    },
+    {
+      "role": "worker",
+      "text": "Thank you for confirming! The pattern on the board matches the target\u2014an upside-down L, with the correct pieces in place. If you'd like to do another pattern or need any adjustments, please let me know!"
+    }
+  ],
+  "practice_puzzle": 1,
+  "turns": [
+    {
+      "role": "divider",
+      "text": "Trial 1"
+    },
+    {
+      "role": "worker",
+      "text": "The board is currently empty, and I have 24 patterned pieces available in staging. Please tell me which piece to place first and at which position (column, row) you'd like me to place it."
+    },
+    {
+      "role": "helper",
+      "text": "Onto the next target pattern now. Please place white tile with 6 diagonal black lines at 0,0"
+    },
+    {
+      "role": "worker",
+      "text": "I placed the white tile with a few bold thick black diagonal lines rising to the right (ID 3) at position (0, 0) in the top-left corner. I'm not certain it's the right choice.",
+      "actions": [
+        "placed piece #3 at (0, 0)"
+      ]
+    },
+    {
+      "role": "helper",
+      "text": "next, pink spiral piece at 0,1"
+    },
+    {
+      "role": "worker",
+      "text": "I placed the pale-pink tile with a single thin black spiral winding clockwise (ID 6) at position (0, 1), directly below the white tile with 6 diagonal black lines. I'm not entirely confident it's the right choice.",
+      "actions": [
+        "placed piece #6 at (0, 1)"
+      ]
+    },
+    {
+      "role": "helper",
+      "text": "next, white tile with 3 horizontontal black stripes ant 0,2"
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+# Local environment and caches
+.env
+*.egg-info/
+__pycache__/
+*.py[cod]
+
+# Live credentials and newly collected participant data
+data/participant_roster.csv
+data/raw/
+data/gradings/
+data/exports/
+data/roster_snapshots/

@@ -1,0 +1,47 @@
+{
+  "snapshot_id": "7fa95c17_D_P1W1_CA",
+  "dialogue_id": "7fa95c17",
+  "session_id": "7fa95c17-7841-4cec-b732-b1fc270c9f6c",
+  "condition": "D",
+  "condition_version": "D2",
+  "snapshot_type": "P1W1",
+  "arm": "CA",
+  "rating_point_index": 0,
+  "trial_label": "Practice",
+  "puzzle_number": 1,
+  "shared_view": true,
+  "view": "shared",
+  "hide_worker": false,
+  "word_count": 48,
+  "ground_truth_piece": null,
+  "placed_piece": null,
+  "worker_correct": null,
+  "helper_turn": 3,
+  "worker_turn": 4,
+  "target_board_image": "target_7fa95c17_1.png",
+  "worker_board_image": "worker_7fa95c17_D_P1W1_CA.png",
+  "show_candidates": false,
+  "practice_summary": [],
+  "practice_puzzle": 1,
+  "turns": [
+    {
+      "role": "divider",
+      "text": "Practice"
+    },
+    {
+      "role": "worker",
+      "text": "The grid is empty and I have 24 unique pieces with different colors and patterns. Please tell me which piece to place first and where to put it on the grid (give me column and row). Let me know if you need a description of the available pieces!"
+    },
+    {
+      "role": "helper",
+      "text": "top left is a circular swirl"
+    },
+    {
+      "role": "worker",
+      "text": "I placed the pale-pink tile with a single thick, bold black spiral winding counter-clockwise (ID 7) in the top-left corner at (0, 0). I'm not sure this is the right one.",
+      "actions": [
+        "placed piece #7 at (0, 0)"
+      ]
+    }
+  ]
+}
