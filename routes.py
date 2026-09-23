@@ -12,7 +12,7 @@ from datetime import datetime
 
 from game_session import (
     user_sessions, get_user_session_id, get_game_session,
-    LOGGING_AVAILABLE
+    get_auto_player_modes, LOGGING_AVAILABLE
 )
 
 # Import authentication (only used in study mode)
@@ -96,10 +96,14 @@ def index():
             return redirect(url_for('puzzle.login'))
     
     # Priority 1: Command-line flags (if set, override everything)
-    if AUTO_START_MODE == 'worker':
-        return redirect(url_for('puzzle.worker', auto_worker='human', auto_helper='llm', shared_view='true' if SHARED_VIEW_ENABLED else 'false'))
-    elif AUTO_START_MODE == 'helper':
-        return redirect(url_for('puzzle.helper', auto_worker='llm', auto_helper='human', shared_view='true' if SHARED_VIEW_ENABLED else 'false'))
+    auto_modes = get_auto_player_modes(AUTO_START_MODE)
+    if auto_modes is not None:
+        return redirect(url_for(
+            f'puzzle.{AUTO_START_MODE}',
+            auto_worker=auto_modes[0],
+            auto_helper=auto_modes[1],
+            shared_view='true' if SHARED_VIEW_ENABLED else 'false',
+        ))
     
     # Priority 2: Credential-based function (if authenticated and not admin)
     if session.get('authenticated'):
@@ -408,8 +412,10 @@ def worker():
     user_id = session.get('user_id', 'anonymous')
     print(f"[ROUTE-DEBUG] /worker accessed by user_id={user_id}, game_session_id={game_session_id}")
     
-    auto_worker = request.args.get('auto_worker', None)
-    auto_helper = request.args.get('auto_helper', None)
+    auto_worker, auto_helper = get_auto_player_modes(current_app.config.get('AUTO_START_MODE')) or (
+        request.args.get('auto_worker'),
+        request.args.get('auto_helper'),
+    )
     shared_view = request.args.get('shared_view', 'true')
     questionnaire_url = os.environ.get('FORMS_QUESTIONNAIRE_URL', '')
     return render_template('worker.html', auto_worker=auto_worker, auto_helper=auto_helper, shared_view=shared_view, questionnaire_url=questionnaire_url)
@@ -442,8 +448,10 @@ def helper():
         game_session_id = session.get('game_session_id')
         print(f"[ROUTE-DEBUG] Using EXISTING game_session_id for helper: {game_session_id}")
     
-    auto_worker = request.args.get('auto_worker', None)
-    auto_helper = request.args.get('auto_helper', None)
+    auto_worker, auto_helper = get_auto_player_modes(current_app.config.get('AUTO_START_MODE')) or (
+        request.args.get('auto_worker'),
+        request.args.get('auto_helper'),
+    )
     shared_view = request.args.get('shared_view', 'true')
     questionnaire_url = os.environ.get('FORMS_QUESTIONNAIRE_URL', '')
     return render_template('helper.html', auto_worker=auto_worker, auto_helper=auto_helper, shared_view=shared_view, questionnaire_url=questionnaire_url)

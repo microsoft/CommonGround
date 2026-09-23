@@ -1,13 +1,13 @@
 """
 Integration module connecting LLM agents with the puzzle UI.
 """
-import asyncio
 import logging
 import queue
 from typing import Optional, Dict, Any
 from datetime import datetime
 
 from .client import get_ai_client
+from .async_executor import AsyncExecutor as AsyncExecutor
 from .agents import WorkerAgent, HelperAgent
 from .logger import get_trial_logger
 
@@ -177,29 +177,3 @@ class AgentController:
         if self.worker_agent:
             return self.worker_agent.validate_action(action)
         return True, None
-
-
-class AsyncExecutor:
-    """Helper to execute async functions from sync context."""
-    
-    def __init__(self):
-        self.loop = None
-        self.thread = None
-        
-    def run_async(self, coro):
-        """Run async coroutine and return result."""
-        return asyncio.run(coro)
-    
-    def run_async_in_background(self, coro, callback):
-        """Run async coroutine in background and call callback with result."""
-        def _run():
-            try:
-                result = asyncio.run(coro)
-                callback(result)
-            except Exception as e:
-                logger.error(f"Background async error: {e}")
-                callback(None)
-        
-        import threading
-        thread = threading.Thread(target=_run, daemon=True)
-        thread.start()

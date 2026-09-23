@@ -167,6 +167,8 @@
             sessionId = data.session_id;
             hasJoinedSession = true;  // Mark that we've successfully joined
             pieceImages = data.piece_images;
+            workerMode = data.worker_mode;
+            helperMode = data.helper_mode;
             
             // Pre-load all piece images for synchronous drawing
             preloadPieceImages();

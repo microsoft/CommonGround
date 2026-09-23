@@ -2,12 +2,14 @@
 AI client and utilities for puzzle task.
 Handles Azure OpenAI integration and chat completion requests.
 """
-import asyncio
+import atexit
 import logging
+import threading
 from typing import List, Dict, Any, Optional
 
 from azure.identity import DefaultAzureCredential, get_bearer_token_provider
 from openai import AsyncAzureOpenAI, AsyncOpenAI
+from .async_executor import get_async_executor
 
 try:
     from ..utils import settings
@@ -111,7 +113,7 @@ class AIClient:
     ) -> str:
         """Synchronous wrapper for get_chat_completion."""
         try:
-            return asyncio.run(self.get_chat_completion(messages, max_tokens))
+            return get_async_executor().run_async(self.get_chat_completion(messages, max_tokens))
         except Exception as e:
             logger.error(f"Error in synchronous chat completion: {e}")
             return f"GENERATION ERROR: {str(e)}"
@@ -119,10 +121,25 @@ class AIClient:
 
 # Global AI client instance
 ai_client = None
+_client_lock = threading.Lock()
 
 def get_ai_client() -> AIClient:
     """Get or create global AI client instance."""
     global ai_client
-    if ai_client is None:
-        ai_client = AIClient()
-    return ai_client
+    with _client_lock:
+        if ai_client is None:
+            ai_client = AIClient()
+        return ai_client
+
+
+def _close_cached_client() -> None:
+    global ai_client
+    executor = get_async_executor()
+    with _client_lock:
+        if ai_client is not None and executor.is_running:
+            executor.run_async(ai_client.client.close(), timeout=5.0)
+            ai_client = None
+
+
+# Registered after the executor so the transport closes before its event loop.
+atexit.register(_close_cached_client)

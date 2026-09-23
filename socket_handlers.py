@@ -2,7 +2,6 @@
 Socket.IO event handlers for puzzle collaboration web app.
 Registered via register_handlers() in web_app.py.
 """
-import asyncio
 import time
 import os
 from flask_socketio import emit, join_room
@@ -11,7 +10,7 @@ from datetime import datetime
 
 from game_session import (
     user_sessions, get_user_session_id, get_session_id_from_data,
-    get_or_create_game_session, get_game_session,
+    get_or_create_game_session, get_game_session, get_auto_player_modes,
     LOGGING_AVAILABLE
 )
 
@@ -67,8 +66,10 @@ def register_handlers(socketio, app):
         SHARED_VIEW_ENABLED = app.config.get('SHARED_VIEW_ENABLED', True)
         RUN_STUDY_MODE = app.config.get('RUN_STUDY_MODE', False)
 
-        worker_mode = data.get('worker_mode', 'human')
-        helper_mode = data.get('helper_mode', 'human')
+        worker_mode, helper_mode = get_auto_player_modes(app.config.get('AUTO_START_MODE')) or (
+            data.get('worker_mode', 'human'),
+            data.get('helper_mode', 'human'),
+        )
         shared_view = data.get('shared_view', SHARED_VIEW_ENABLED)
         
         session_id = get_session_id_from_data(data)
@@ -151,8 +152,10 @@ def register_handlers(socketio, app):
         SHARED_VIEW_ENABLED = app.config.get('SHARED_VIEW_ENABLED', True)
         RUN_STUDY_MODE = app.config.get('RUN_STUDY_MODE', False)
 
-        worker_mode = data.get('worker_mode', 'human')
-        helper_mode = data.get('helper_mode', 'human')
+        worker_mode, helper_mode = get_auto_player_modes(app.config.get('AUTO_START_MODE')) or (
+            data.get('worker_mode', 'human'),
+            data.get('helper_mode', 'human'),
+        )
         shared_view = data.get('shared_view', SHARED_VIEW_ENABLED)
         
         session_id = get_session_id_from_data(data)
@@ -286,7 +289,7 @@ def register_handlers(socketio, app):
     def _send_llm_helper_guidance(game_session, session_id, trigger_message):
         """Background task: get LLM helper response and broadcast it."""
         try:
-            response = asyncio.run(game_session.get_llm_helper_response(trigger_message))
+            response = game_session.async_executor.run_async(game_session.get_llm_helper_response(trigger_message))
             
             if response:
                 game_session.add_message('helper', response)
@@ -330,7 +333,7 @@ def register_handlers(socketio, app):
                 print(f"[DEBUG] llm_thinking emitted for worker to room {session_id}")
                 print(f"[DEBUG] Loop {my_loop_id}: About to call get_llm_worker_action()...")
                 
-                action_result = asyncio.run(game_session.get_llm_worker_action())
+                action_result = game_session.async_executor.run_async(game_session.get_llm_worker_action())
                 
                 print(f"[DEBUG] Loop {my_loop_id}: get_llm_worker_action() returned, result={action_result is not None}")
                 
@@ -362,7 +365,7 @@ def register_handlers(socketio, app):
                         socketio.sleep(1)
                         socketio.emit('llm_thinking', {'role': 'helper'}, room=session_id)
                         
-                        helper_response = asyncio.run(game_session.get_llm_helper_response(message))
+                        helper_response = game_session.async_executor.run_async(game_session.get_llm_helper_response(message))
                         
                         if game_session.worker_loop_id != my_loop_id:
                             print(f"[DEBUG] Loop {my_loop_id} superseded during helper response, exiting without processing")
@@ -864,7 +867,7 @@ def register_handlers(socketio, app):
                     print(f"[DEBUG] send_llm_response: session_id={session_id}, GameSession.session_id={game_session.session_id}")
                     print(f"[DEBUG] send_llm_response: GameSession object id={id(game_session)}")
                     print(f"[DEBUG] Calling get_llm_helper_response with message: {message}")
-                    response = asyncio.run(game_session.get_llm_helper_response(message))
+                    response = game_session.async_executor.run_async(game_session.get_llm_helper_response(message))
                     
                     print(f"[DEBUG] LLM response received: {response[:100] if response else 'None'}...")
                     print(f"[DEBUG] Full LLM response length: {len(response) if response else 0}")

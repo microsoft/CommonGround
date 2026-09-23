@@ -9,6 +9,7 @@ import base64
 import os
 import json
 from datetime import datetime
+from typing import Optional, Tuple
 from PIL import Image
 from flask import session, request
 
@@ -19,7 +20,7 @@ from puzzle_constants import (
 
 # Import AI agent if available
 try:
-    from ai import AgentController, AsyncExecutor
+    from ai import AgentController, get_async_executor
     AI_AVAILABLE = True
 except ImportError:
     AI_AVAILABLE = False
@@ -102,7 +103,7 @@ class GameSession:
                 worker_mode=worker_mode,
                 helper_mode=helper_mode
             )
-            self.async_executor = AsyncExecutor()
+            self.async_executor = get_async_executor()
             print(f"[DEBUG] AI agent controller initialized successfully")
         elif (worker_mode == 'llm' or helper_mode == 'llm') and not AI_AVAILABLE:
             print(f"[WARNING] LLM mode requested but AI module not available!")
@@ -657,6 +658,17 @@ class GameSession:
 # ============================================================================
 # Helper functions for managing user-specific game sessions
 # ============================================================================
+
+def get_auto_player_modes(mode: Optional[str]) -> Optional[Tuple[str, str]]:
+    """Get CLI-enforced player modes, or None for manual role selection."""
+    if mode is None:
+        return None
+    if mode == 'worker':
+        return 'human', 'llm'
+    if mode == 'helper':
+        return 'llm', 'human'
+    raise ValueError(f"Unknown auto-start mode: {mode!r}")
+
 
 def get_user_session_id():
     """Get the unique session ID for the current user.

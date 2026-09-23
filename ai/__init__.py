@@ -4,6 +4,7 @@ AI module for LLM-based puzzle agents.
 from .client import AIClient, get_ai_client
 from .agents import WorkerAgent, HelperAgent
 from .integration import AgentController, AsyncExecutor
+from .async_executor import get_async_executor
 from .logger import get_trial_logger
 from .state_serializer import GridStateSerializer, ActionParser
 
@@ -14,8 +15,8 @@ __all__ = [
     'HelperAgent',
     'AgentController',
     'AsyncExecutor',
+    'get_async_executor',
     'get_trial_logger',
     'GridStateSerializer',
     'ActionParser'
 ]
-
