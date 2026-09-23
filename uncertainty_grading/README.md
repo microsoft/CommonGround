@@ -2,11 +2,12 @@
 
 Standalone Flask application for collecting human ratings of AI Worker behavior in Common Ground puzzle dialogues.
 
-The folder is intentionally runtime-only. It contains the frozen A-E study conditions, participant assignments, web application, and empty directories for newly collected responses. Historical results, analysis code, source corpora, stimulus builders, and old environments are not included.
+The folder is intentionally runtime-only. It contains the web application and manifests for the frozen A-E study conditions; the required data assets are supplied locally. Historical results, analysis code, source corpora, stimulus builders, and old environments are not included.
 
-> **Required local assets:** Rendered board images are not included in Git
-> checkouts. Keep your existing `stimuli\boards\` directory, or restore the
-> matching images before starting the app or running the installation check.
+> **Required local assets:** Frozen JSON snapshots and rendered board images
+> are not included in Git checkouts. Keep your existing `stimuli\snapshots\`
+> and `stimuli\boards\` directories, or restore matching assets before starting
+> the app or running the installation check.
 > See [Frozen Stimuli](#frozen-stimuli).
 
 ## Quick Start
@@ -123,19 +124,24 @@ The application uses local append-only files and should run as a single applicat
 
 ## Frozen Stimuli
 
-The frozen manifests and snapshot data are tracked in Git:
+Only the frozen study manifests are tracked in Git:
 
 ```text
 stimuli\snapshot_matrix.csv
 stimuli\practice_manifest.json
-stimuli\snapshots\
 ```
 
-Rendered PNG images belong in `stimuli\boards\`, which is ignored by Git.
-On a fresh checkout or deployment, copy the matching board-image assets into
-that directory. The manifests and snapshots still reference those image
-filenames, so `doctor` will report missing assets until they are present.
-Removing the directory from Git tracking does not delete existing local images.
+The following asset directories are ignored by Git:
+
+```text
+stimuli\snapshots\      frozen dialogue and board-state JSON
+stimuli\boards\         rendered PNG images
+```
+
+On a fresh checkout or deployment, restore both directories with assets matching
+the manifests. `doctor` validates the snapshot JSON and referenced images, and
+will report missing assets until they are present. Removing the directories
+from Git tracking does not delete existing local files.
 
 The original source corpora and rebuild pipeline were deliberately removed. Restore them from their source repository if the frozen stimuli must be regenerated.
 
@@ -201,7 +207,8 @@ uncertainty_grading\
   run.ps1, run.cmd        local or production launchers
   doctor.ps1              installation validation
   data\                    live roster and future outputs only
-  stimuli\                versioned A-E manifests and snapshots
+  stimuli\                versioned A-E manifests
+    snapshots\            required local JSON snapshots, excluded from Git
     boards\               required local image assets, excluded from Git
   templates\, static\     user interface
 ```

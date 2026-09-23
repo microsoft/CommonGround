@@ -250,10 +250,12 @@ collecting human ratings of AI Worker behavior. It presents frozen dialogue and
 board snapshots across conditions A-E, with ratings before or after a Worker
 response, rather than running live puzzle agents.
 
-Its rendered board images are kept locally in
-`uncertainty_grading/stimuli/boards/` and are not tracked by Git. Fresh checkouts
-need the matching image assets before running the rating application. The main
-puzzle game generates its own images and does not depend on that directory.
+Its frozen JSON snapshots and rendered board images are kept locally in
+`uncertainty_grading/stimuli/snapshots/` and
+`uncertainty_grading/stimuli/boards/`, respectively, and are not tracked by Git.
+Fresh checkouts need both sets of assets, matching the versioned manifests,
+before running the rating application. The main puzzle game generates its own
+images and does not depend on these directories.
 
 See its [README](uncertainty_grading/README.md) for its own setup, participant
 assignments, study conditions, and data-handling guidance.
