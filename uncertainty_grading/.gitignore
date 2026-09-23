@@ -4,6 +4,9 @@
 __pycache__/
 *.py[cod]
 
+# Rendered board images are supplied locally, not tracked in Git.
+/stimuli/boards/
+
 # Live credentials and newly collected participant data
 data/participant_roster.csv
 data/raw/

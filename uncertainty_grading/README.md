@@ -4,6 +4,11 @@ Standalone Flask application for collecting human ratings of AI Worker behavior 
 
 The folder is intentionally runtime-only. It contains the frozen A-E study conditions, participant assignments, web application, and empty directories for newly collected responses. Historical results, analysis code, source corpora, stimulus builders, and old environments are not included.
 
+> **Required local assets:** Rendered board images are not included in Git
+> checkouts. Keep your existing `stimuli\boards\` directory, or restore the
+> matching images before starting the app or running the installation check.
+> See [Frozen Stimuli](#frozen-stimuli).
+
 ## Quick Start
 
 Open PowerShell in this folder:
@@ -118,14 +123,19 @@ The application uses local append-only files and should run as a single applicat
 
 ## Frozen Stimuli
 
-Only files needed to serve the conditions are retained:
+The frozen manifests and snapshot data are tracked in Git:
 
 ```text
 stimuli\snapshot_matrix.csv
 stimuli\practice_manifest.json
 stimuli\snapshots\
-stimuli\boards\
 ```
+
+Rendered PNG images belong in `stimuli\boards\`, which is ignored by Git.
+On a fresh checkout or deployment, copy the matching board-image assets into
+that directory. The manifests and snapshots still reference those image
+filenames, so `doctor` will report missing assets until they are present.
+Removing the directory from Git tracking does not delete existing local images.
 
 The original source corpora and rebuild pipeline were deliberately removed. Restore them from their source repository if the frozen stimuli must be regenerated.
 
@@ -191,6 +201,7 @@ uncertainty_grading\
   run.ps1, run.cmd        local or production launchers
   doctor.ps1              installation validation
   data\                    live roster and future outputs only
-  stimuli\                frozen A-E snapshots and boards
+  stimuli\                versioned A-E manifests and snapshots
+    boards\               required local image assets, excluded from Git
   templates\, static\     user interface
 ```
