@@ -11,25 +11,43 @@ Usage:
 """
 from flask import Flask
 from flask_socketio import SocketIO
+from dotenv import load_dotenv
 import argparse
 import os
+import secrets
+
+
+load_dotenv()
+
+
+def _env_bool(name, default=False):
+    value = os.environ.get(name)
+    return default if value is None else value.lower() in {'1', 'true', 'yes', 'on'}
+
 
 # Create Flask app and SocketIO
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'puzzle-collaboration-secret-key'
+flask_secret_key = os.environ.get('FLASK_SECRET_KEY')
+app.config['SECRET_KEY'] = flask_secret_key or secrets.token_urlsafe(32)
 app.config['SESSION_COOKIE_NAME'] = 'puzzle_session'
 app.config['PERMANENT_SESSION_LIFETIME'] = 86400  # 24 hours in seconds
 app.config['SESSION_PERMANENT'] = True
+app.config['SESSION_COOKIE_HTTPONLY'] = True
+app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
 
-# Config flags (set from CLI args in __main__)
-app.config['AUTO_START_MODE'] = None
-app.config['SHARED_VIEW_ENABLED'] = True
-app.config['RUN_STUDY_MODE'] = False
+# Config flags (CLI options override these when running web_app.py directly)
+app.config['AUTO_START_MODE'] = os.environ.get('AUTO_START_MODE') or None
+app.config['SHARED_VIEW_ENABLED'] = _env_bool('SHARED_VIEW_ENABLED', True)
+app.config['RUN_STUDY_MODE'] = _env_bool('RUN_STUDY_MODE', False)
+
+allowed_origins = os.environ.get('SOCKETIO_ALLOWED_ORIGINS')
+if allowed_origins:
+    allowed_origins = [origin.strip() for origin in allowed_origins.split(',') if origin.strip()]
 
 socketio = SocketIO(
-    app, 
-    cors_allowed_origins="*", 
-    manage_session=False, 
+    app,
+    cors_allowed_origins=allowed_origins,
+    manage_session=False,
     cookie=None,
     ping_timeout=60,
     ping_interval=25,
@@ -45,6 +63,19 @@ from socket_handlers import register_handlers
 register_handlers(socketio, app)
 
 
+@app.get('/healthz')
+def healthz():
+    return {'status': 'ok'}
+
+
+@app.after_request
+def add_security_headers(response):
+    response.headers['X-Content-Type-Options'] = 'nosniff'
+    response.headers['X-Frame-Options'] = 'DENY'
+    response.headers['Referrer-Policy'] = 'strict-origin-when-cross-origin'
+    return response
+
+
 def run_server(mode=None, shared_view=True, run_study=False, host=None, port=None, debug=None):
     """Configure app.config and start the Flask-SocketIO server.
 
@@ -55,13 +86,12 @@ def run_server(mode=None, shared_view=True, run_study=False, host=None, port=Non
     app.config['SHARED_VIEW_ENABLED'] = shared_view
     app.config['RUN_STUDY_MODE'] = run_study
 
-    is_production = os.environ.get('WEBSITE_SITE_NAME') is not None
     if host is None:
         host = '0.0.0.0'
     if port is None:
-        port = 8000 if is_production else int(os.environ.get('PORT', 5000))
+        port = int(os.environ.get('PORT', 5000))
     if debug is None:
-        debug = (not is_production) and os.environ.get('FLASK_DEBUG', '1') == '1'
+        debug = os.environ.get('FLASK_DEBUG', '1') == '1'
 
     labels = {
         None: 'Manual selection (human-human, or choose AI per browser)',
@@ -161,4 +191,3 @@ Role Assignment Priority:
 
     mode = 'worker' if args.worker else ('helper' if args.helper else None)
     run_server(mode=mode, shared_view=not args.no_shared_view, run_study=args.run_study)
-

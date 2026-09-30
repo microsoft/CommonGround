@@ -68,6 +68,10 @@ Start with **human-human** mode to try the task without an AI account or API key
 You will need Python, pip, and a modern browser. The application and regression
 tests have been tested with Python 3.12.
 
+Local runs and generic Linux hosting are supported. Azure App Service deployment
+files are excluded from this repository; Azure OpenAI remains an optional model
+backend for locally hosted sessions.
+
 Run the following commands from the repository root. Keep the virtual environment
 active when using the commands elsewhere in this guide.
 
@@ -182,6 +186,24 @@ otherwise the runner stops that puzzle at the turn limit. The default is
 **20 Worker turns per puzzle**. Use `--limit` and `--max-turns` to bound a run
 before starting larger experiments.
 
+### Self-hosted Linux
+
+The [systemd service example](puzzle-webapp.service) remains available; adjust its
+paths, account, and writable directories for your machine.
+
+For a threaded Gunicorn server, run from the repository root:
+
+```bash
+gunicorn --worker-class gthread --threads 8 --workers 1 --bind 127.0.0.1:5000 web_app:app
+```
+
+Keep **one worker process** because game state is held in memory. Set a stable
+`FLASK_SECRET_KEY` using [`.env.example`](.env.example) as a guide; otherwise each
+restart invalidates browser login sessions. Direct WSGI/Gunicorn launches also
+read `AUTO_START_MODE` (`worker` or `helper`), `SHARED_VIEW_ENABLED`, and
+`RUN_STUDY_MODE` from the environment or `.env`. The command-line launchers
+continue to control these settings through their own options.
+
 ## Puzzles and experimental conditions
 
 Puzzles are defined in [`utils/puzzles.json`](utils/puzzles.json) and run in file
@@ -224,7 +246,8 @@ Authenticated admins can download collected logs at `/admin/download_logs`.
 ## Logging and analysis
 
 Local runs write to `logs/` by default; override the location with `LOG_DIR`.
-On Linux Azure App Service, the default is `/home/logs`.
+Relative paths are resolved from the application directory; absolute paths are
+used unchanged.
 
 - `sessions/*.jsonl`: per-session event streams, including chat and game actions.
 - `summaries/`: session summaries.
@@ -278,9 +301,10 @@ From the repository root, with the project dependencies installed:
 python -m unittest discover -s tests -v
 ```
 
-The [regression suite](tests/) covers role selection, study-mode gates, repeated
-AI replies, session isolation, and async execution. Model responses are mocked or
-served by a local HTTP stub; the tests do not call external model endpoints.
+The [regression suite](tests/) covers local configuration, log paths, role
+selection, study-mode gates, repeated AI replies, session isolation, and async
+execution. Model responses are mocked or served by a local HTTP stub; the tests do
+not call external model endpoints.
 
 ## Project layout
 
@@ -298,9 +322,10 @@ served by a local HTTP stub; the tests do not call external model endpoints.
 | [`tests/`](tests/) | Offline regression tests for web modes and AI request execution. |
 | [`uncertainty_grading/`](uncertainty_grading/) | Companion human-rating application and frozen study stimuli. |
 
-Launch and deployment helpers include [`deploy_azure.ps1`](deploy_azure.ps1),
-[`startup.sh`](startup.sh), [`startup_minimal.sh`](startup_minimal.sh), and
-[`puzzle-webapp.service`](puzzle-webapp.service).
+Local launchers include [`run.ps1`](run.ps1) and [`run.sh`](run.sh). The existing
+[`run_web_app.ps1`](run_web_app.ps1), [`run_web_app.sh`](run_web_app.sh), and
+[`puzzle-webapp.service`](puzzle-webapp.service) helpers remain available for
+generic self-hosted setups.
 
 ## Citation
 

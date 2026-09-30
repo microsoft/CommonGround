@@ -2,6 +2,14 @@
 .env
 utils/user_credentials*.json
 
+# Azure App Service deployment artifacts (kept locally)
+/.deployment
+/.vscodeignore
+/.zipignore
+/deploy_azure.ps1
+/startup.sh
+/startup_minimal.sh
+
 # Runtime data (may contain participant identifiers)
 logs/
 last_message_sent.json

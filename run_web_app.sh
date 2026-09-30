@@ -112,9 +112,9 @@ fi
 
 echo -e "${CYAN}Python version: $PYTHON_VERSION ✓${NC}"
 
-# Check if running on Azure with pre-installed packages (Oryx sets PYTHONPATH)
+# Reuse packages supplied by an external Python environment.
 if [ -n "$PYTHONPATH" ] && python3 -c "import flask" 2>/dev/null; then
-    echo -e "${GREEN}Packages already available (Oryx build). Skipping venv creation.${NC}"
+    echo -e "${GREEN}Packages already available. Skipping venv creation.${NC}"
     SKIP_VENV=true
 else
     SKIP_VENV=false

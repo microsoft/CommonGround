@@ -43,16 +43,10 @@ class Settings:
         
         # Logging Configuration
         self.LOG_LEVEL = os.environ.get("LOG_LEVEL", "INFO")
-        # Resolve LOG_DIR to an absolute, WRITABLE, PERSISTENT path so writers and
-        # the admin log downloader always agree. On Azure, /home/site/wwwroot is
-        # often read-only (run-from-package), so default to /home/logs (the /home
-        # share is writable and persists across restarts/deploys). Locally, anchor
-        # to the puzzle dir. An absolute LOG_DIR env override is used as-is; a
-        # relative one is anchored to the chosen base.
+        # Anchor relative log paths to the app so writers and downloads agree.
         _log_dir_env = os.environ.get("LOG_DIR", "logs")
         _puzzle_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        _base_dir = "/home" if os.path.exists("/home/site/wwwroot/") else _puzzle_dir
-        self.LOG_DIR = _log_dir_env if os.path.isabs(_log_dir_env) else os.path.join(_base_dir, _log_dir_env)
+        self.LOG_DIR = _log_dir_env if os.path.isabs(_log_dir_env) else os.path.join(_puzzle_dir, _log_dir_env)
         self.LOG_LLM_INTERACTIONS = True
         
         # User Action Logging Configuration
@@ -96,22 +90,10 @@ class Settings:
     
     def _get_logs_directory(self) -> str:
         """Determine the appropriate logs directory path."""
-        # Check if running in Azure App Service
-        azure_logs_dir = '/home/site/wwwroot/'
-        
-        if os.path.exists(azure_logs_dir):
-            return os.path.join(azure_logs_dir, "conversation_logs")
-        else:
-            # Local development
-            return os.path.join(
-                os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), 
-                "conversation_logs"
-            )
-    
-    @property
-    def is_azure_environment(self) -> bool:
-        """Check if running in Azure environment."""
-        return os.path.exists('/home/site/wwwroot/')
+        return os.path.join(
+            os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
+            "conversation_logs"
+        )
 
 
 # Global settings instance

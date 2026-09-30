@@ -4,6 +4,9 @@
 __pycache__/
 *.py[cod]
 
+# Azure App Service deployment configuration (kept locally)
+/.deployment
+
 # Frozen snapshots and rendered board images are supplied locally.
 /stimuli/boards/
 /stimuli/snapshots/
