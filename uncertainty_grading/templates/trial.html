@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Practice' if is_practice else 'Trial' }}{% endblock %}
+{% block wrap_class %}wide{% endblock %}
+{% block content %}
+  {% macro bins(name, aria, low, high) %}
+  <div class="bins" role="radiogroup" aria-label="{{ aria }}">
+    {% for v in range(0, 101, 10) %}
+    <label class="bin">
+      <input type="radio" name="{{ name }}" value="{{ v }}" required>
+      <span>{{ v }}%</span>
+    </label>
+    {% endfor %}
+  </div>
+  <div class="bins-scale">
+    <span>{{ low }}</span>
+    <span>{{ high }}</span>
+  </div>
+  {% endmacro %}
+
+  <div class="progress">
+    {{ 'Practice' if is_practice else 'Item' }} {{ index + 1 }} of {{ total }}
+    {% if n_convs and n_convs > 1 and conv_index %}
+    <span class="conv-tag">Conversation {{ conv_index }} of {{ n_convs }}</span>
+    {% endif %}
+  </div>
+
+  {% if is_conv_start and conv_index and conv_index > 1 %}
+  <div class="conv-banner">
+    You're now starting a <strong>new, separate conversation</strong> between a
+    different Helper and AI Worker. The earlier messages no longer apply — judge
+    this one on its own.
+  </div>
+  {% endif %}
+
+  <div class="trial-layout">
+  {% include "_snapshot.html" %}
+
+  <form method="post" action="{{ url_for('study4.flow') }}" id="ratingForm">
+    {% if arm == 'CB' %}
+    <div class="rating-block">
+      <label>How likely is it that the Worker will pick the correct
+        piece for the Helper's last instruction, based on what you've seen so
+        far?</label>
+      {{ bins('rating', 'Likelihood correct', '0% — very unlikely', '100% — very likely') }}
+    </div>
+    {% else %}
+    <div class="rating-block">
+      <label>How confident does the AI Worker appear to be in its action from its last message?</label>
+      {{ bins('worker_confidence', 'Apparent confidence', '0% — not confident', '100% — very confident') }}
+    </div>
+    <div class="rating-block">
+      <label>How likely is it the AI Worker placed the correct piece for the
+        Helper's last instruction?</label>
+      {{ bins('rating', 'Likelihood correct', '0% — very unlikely', '100% — very likely') }}
+    </div>
+    {% endif %}
+
+    <div class="action-block">
+      <label>What would you do next?</label>
+      <div class="actions" role="radiogroup" aria-label="Next action">
+        {% for val, lbl in [('accept', "proceed with the AI's action"), ('correct', "instruct the AI to change or undo its action"), ('ask_question', "ask the AI to explain or verify its action"), ('more', "provide a more specific instruction")] %}
+        <label class="action">
+          <input type="radio" name="next_action" value="{{ val }}" required>
+          <span>{{ lbl }}</span>
+        </label>
+        {% endfor %}
+      </div>
+    </div>
+
+    {% if is_practice %}
+    <div class="feedback" id="feedback" style="display:none;">
+      {% if is_check %}When the Worker is clearly unsure and names a piece that
+      doesn't match the Helper's description, low ratings are appropriate — give
+      your honest read of each turn.{% else %}Thanks — that's the idea. In the
+      main task there is no feedback; just give your honest judgement for each
+      item.{% endif %}
+    </div>
+    {% endif %}
+
+    <button class="btn" type="submit" id="nextBtn" disabled>Next</button>
+  </form>
+  </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  (function () {
+    // After advancing to the next item the conversation has grown by one or
+    // more turns. Land the participant on the newest turn instead of the top of
+    // the (now longer) transcript so they don't have to scroll past everything
+    // they already read.
+    const turns = document.querySelectorAll('.transcript .turn');
+    if (turns.length) {
+      turns[turns.length - 1].scrollIntoView({ block: 'start' });
+    }
+
+    const form = document.getElementById('ratingForm');
+    const nextBtn = document.getElementById('nextBtn');
+    const feedback = document.getElementById('feedback');
+
+    function sel(name) {
+      return form.querySelector('input[name="' + name + '"]:checked');
+    }
+    function radioNames() {
+      const names = new Set();
+      form.querySelectorAll('input[type="radio"]').forEach(function (r) {
+        names.add(r.name);
+      });
+      return names;
+    }
+    function allChosen() {
+      for (const n of radioNames()) {
+        if (!sel(n)) return false;
+      }
+      return true;
+    }
+    function refreshChecked() {
+      form.querySelectorAll('.bin, .action').forEach(function (lbl) {
+        lbl.classList.toggle('is-checked', lbl.querySelector('input').checked);
+      });
+    }
+    function update() {
+      refreshChecked();
+      const ok = allChosen();
+      nextBtn.disabled = !ok;
+      if (ok && feedback) feedback.style.display = 'block';
+    }
+    form.addEventListener('change', update);
+    form.addEventListener('submit', function (e) {
+      if (!allChosen()) {
+        e.preventDefault();
+      }
+    });
+    update();
+  })();
+</script>
+{% endblock %}

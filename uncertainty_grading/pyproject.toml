@@ -1,0 +1,33 @@
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "uncertainty-grading"
+version = "1.0.0"
+description = "Standalone Flask app for grading uncertainty in puzzle dialogues"
+requires-python = ">=3.10"
+dependencies = [
+    "Flask>=2.3.0",
+    "python-dotenv>=1.0.0",
+    "waitress>=3.0.0",
+    "gunicorn>=21.2.0; platform_system != 'Windows'",
+]
+
+[project.scripts]
+uncertainty-grading = "uncertainty_grading.cli:main"
+
+[tool.setuptools]
+packages = ["uncertainty_grading"]
+package-dir = {uncertainty_grading = "."}
+include-package-data = true
+
+[tool.setuptools.package-data]
+uncertainty_grading = [
+    "templates/*.html",
+    "static/**/*",
+    "stimuli/*.csv",
+    "stimuli/*.json",
+    "stimuli/boards/*.png",
+    "stimuli/snapshots/*.json",
+]

@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Helper View - Puzzle Collaboration</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+</head>
+<body>
+    <div class="header">
+        <h1>🤝 Helper View</h1>
+        <div class="session-info">
+            <span id="puzzleInfo" style="font-weight: bold; margin-right: 20px;">Puzzle: -/-</span>
+            <span id="trialStatus">No active trial</span>
+            {% if session.get('role') == 'admin' %}
+            <a href="/admin/download_logs" style="padding: 5px 15px; background: #2196F3; color: white; text-decoration: none; border-radius: 4px; font-size: 14px; margin-left: 20px;">📦 Download Logs</a>
+            {% endif %}
+        </div>
+    </div>
+    
+    <div class="main-container">
+        <div class="game-section">
+            <div class="canvas-container" id="workerProgressContainer">
+                <h3>Worker's Progress</h3>
+                <canvas id="workerCanvas" width="290" height="290"></canvas>
+                <p class="help-text">This shows what the worker has placed</p>
+            </div>
+            
+            <div class="canvas-container">
+                <h3>Target Pattern</h3>
+                <canvas id="targetCanvas" width="290" height="290"></canvas>
+                <button id="startTrialBtn" class="control-btn">Start Puzzle 1</button>
+                <button id="nextPuzzleBtn" class="control-btn" style="display: none;">Next Puzzle</button>
+                <button id="leaveBtn" class="control-btn secondary" style="display: none;">Leave Session</button>
+            </div>
+            
+            <div class="chat-section">
+                <h3>Chat with Worker</h3>
+                <div id="chatMessages" class="chat-messages"></div>
+                <div class="chat-input-container">
+                    <input type="text" id="chatInput" placeholder="Type your guidance...">
+                    <button id="sendBtn">Send</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div id="statusMessage" class="status-message"></div>
+    
+    <!-- Questionnaire Modal -->
+    <div id="questionnaireModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 10000; justify-content: center; align-items: center;">
+        <div style="background: white; padding: 40px; border-radius: 10px; max-width: 600px; text-align: center;">
+            <h2 style="color: #4CAF50; margin-bottom: 20px;">🎉 Thank You for Participating!</h2>
+            <p style="font-size: 18px; margin-bottom: 30px;">Please copy the URL below and open it in a new tab to complete the questionnaire:</p>
+            <div style="background: #f5f5f5; padding: 20px; border-radius: 5px; margin-bottom: 20px; word-break: break-all; font-family: monospace; font-size: 14px; border: 2px solid #ddd;" id="questionnaireUrlDisplay"></div>
+            <button onclick="copyQuestionnaireUrl()" style="background: #2196F3; color: white; border: none; padding: 12px 30px; border-radius: 5px; font-size: 16px; cursor: pointer; margin-bottom: 20px;">📋 Copy URL</button>
+            <p style="font-size: 14px; color: #666; margin-top: 20px;">After completing the questionnaire, you can close this window.</p>
+        </div>
+    </div>
+    
+    <script>
+        const socket = io({
+            reconnection: true,
+            reconnectionDelay: 1000,
+            reconnectionDelayMax: 5000,
+            reconnectionAttempts: Infinity,
+            timeout: 20000,
+            pingTimeout: 60000,
+            pingInterval: 25000
+        });
+        let sessionId = null;
+        let hasJoinedSession = false;  // Track if we've joined to avoid double-joining
+        let pieceImages = {};
+        let loadedImages = {};  // Pre-loaded Image objects for synchronous drawing
+        let workerArea = Array(6).fill(null).map(() => Array(6).fill(null));
+        let targetArea = Array(6).fill(null).map(() => Array(6).fill(null));
+        let workerMode = 'human';
+        let helperMode = 'human';
+        let sharedView = true;  // Whether helper can see worker's board
+        let totalPieces = 0;
+        let totalTrials = 0;
+        let currentTrialNumber = 0;
+        let currentPuzzleInfo = null;
+        let startButtonMode = 'start';
+        let waitingForHelper = false;
+        let requireComplete = false;  // Current puzzle gates "Next" until board correct
+        let canAdvance = true;        // Server-authoritative: all target pieces placed?
+        
+        // Canvas setup
+        const workerCanvas = document.getElementById('workerCanvas');
+        const workerCtx = workerCanvas.getContext('2d');
+        const targetCanvas = document.getElementById('targetCanvas');
+        const targetCtx = targetCanvas.getContext('2d');
+    const startTrialBtn = document.getElementById('startTrialBtn');
+        
+        const GRID_SIZE = 6;
+        const PIECE_SIZE = 48.3;
+        
+        // Get Flask session data passed from server (defined globally for access in event handlers)
+        const flaskUserId = '{{ session.get("user_id", "") }}';
+        const flaskCustomSessionId = '{{ session.get("custom_session_id", "") }}';
+        const flaskGameSessionId = '{{ session.get("game_session_id", "") }}';
+        const flaskAuthenticated = '{{ session.get("authenticated", False) }}' === 'True';
+        
+        // Function to join session (used on initial load and reconnect)
+        function joinSession() {
+            socket.emit('join_as_helper', {
+                worker_mode: workerMode,
+                helper_mode: helperMode,
+                shared_view: sharedView,
+                flask_user_id: flaskUserId,
+                flask_custom_session_id: flaskCustomSessionId,
+                flask_game_session_id: flaskGameSessionId,
+                flask_authenticated: flaskAuthenticated
+            });
+            console.log('[RECONNECT] Joining/rejoining session with game_session_id:', flaskGameSessionId);
+        }
+        
+        // Handle reconnection - rejoin the session
+        socket.on('connect', () => {
+            console.log('[RECONNECT] Socket connected/reconnected, socket.id:', socket.id);
+            // Only rejoin if we've already joined before (this is a reconnection, not initial connection)
+            if (hasJoinedSession && sessionId) {
+                console.log('[RECONNECT] Rejoining existing session:', sessionId);
+                joinSession();
+            } else {
+                console.log('[RECONNECT] Initial connection, waiting for page load to join');
+            }
+        });
+        
+        // Initialize
+        window.addEventListener('load', () => {
+            // Check for auto-start parameters from server
+            const autoWorker = '{{ auto_worker }}';
+            const autoHelper = '{{ auto_helper }}';
+            const serverSharedView = '{{ shared_view }}';
+            
+            // Set shared view from server
+            if (serverSharedView && serverSharedView !== 'None') {
+                sharedView = serverSharedView === 'true';
+            }
+            
+            // Hide worker progress if shared view is disabled
+            if (!sharedView) {
+                document.getElementById('workerProgressContainer').style.display = 'none';
+                console.log('[DEBUG] Shared view disabled - hiding worker progress');
+            }
+            
+            console.log('[DEBUG] Flask session data:', {
+                user_id: flaskUserId,
+                custom_session_id: flaskCustomSessionId,
+                authenticated: flaskAuthenticated
+            });
+            
+            // Use auto-start params if available, otherwise fallback to sessionStorage
+            if (autoWorker && autoWorker !== 'None') {
+                workerMode = autoWorker;
+                helperMode = (autoHelper && autoHelper !== 'None') ? autoHelper : 'human';
+                // Store for consistency
+                sessionStorage.setItem('workerMode', workerMode);
+                sessionStorage.setItem('helperMode', helperMode);
+                sessionStorage.setItem('sharedView', sharedView);
+            } else {
+                workerMode = sessionStorage.getItem('workerMode') || 'human';
+                helperMode = sessionStorage.getItem('helperMode') || 'human';
+                sharedView = sessionStorage.getItem('sharedView') === 'true';
+            }
+            
+            // Initial join on page load
+            joinSession();
+        });
+        
+        function updateStartButtonState() {
+            if (!startTrialBtn) {
+                return;
+            }
+            if (startButtonMode === 'end') {
+                startTrialBtn.disabled = false;
+                return;
+            }
+
+            if (workerMode === 'llm') {
+                if (startButtonMode === 'next') {
+                    startTrialBtn.disabled = !waitingForHelper;
+                } else if (startButtonMode === 'start') {
+                    const isFirstTrial = currentTrialNumber === 0;
+                    startTrialBtn.disabled = !isFirstTrial;
+                } else {
+                    startTrialBtn.disabled = false;
+                }
+            } else {
+                startTrialBtn.disabled = false;
+            }
+        }
+
+        // Enable/disable the "Next Puzzle" button based on the completion gate.
+        // Only affects the button while it is visible (a next puzzle exists).
+        function refreshNextButton() {
+            const btn = document.getElementById('nextPuzzleBtn');
+            if (!btn || btn.style.display === 'none') {
+                return;
+            }
+            const blocked = requireComplete && !canAdvance;
+            btn.disabled = blocked;
+            btn.title = blocked
+                ? 'Place all target pieces correctly before continuing'
+                : '';
+        }
+
+        // Socket event handlers
+        socket.on('joined', (data) => {
+            sessionId = data.session_id;
+            hasJoinedSession = true;  // Mark that we've successfully joined
+            pieceImages = data.piece_images;
+            workerMode = data.worker_mode;
+            helperMode = data.helper_mode;
+            totalPieces = Object.keys(pieceImages).length;
+            
+            // Pre-load all piece images for synchronous drawing
+            preloadPieceImages();
+            
+            // Update shared view setting from server
+            if (data.shared_view !== undefined) {
+                sharedView = data.shared_view;
+                if (!sharedView) {
+                    document.getElementById('workerProgressContainer').style.display = 'none';
+                    console.log('[DEBUG] Shared view disabled - hiding worker progress');
+                }
+            }
+            
+            drawWorkerArea();
+            drawTargetArea();
+            
+            // Check if we're in LLM mode
+            const isLLMHelperMode = data.helper_mode === 'llm';
+            const isLLMWorkerMode = data.worker_mode === 'llm';
+            
+            if (isLLMHelperMode) {
+                addChatMessage('system', `Connected! 🤖 AI Helper mode is active. Click "Start Puzzle 1" to begin.`);
+            } else if (isLLMWorkerMode) {
+                const viewMode = sharedView ? '' : ' (No Shared View)';
+                addChatMessage('system', `Connected! 🤖 AI Worker mode is active. Click "Start Puzzle 1" and wait for AI Worker's chat message..`);
+            } else {
+                addChatMessage('system', `Connected! Waiting for trial to start...`);
+            }
+
+            waitingForHelper = false;
+            updateStartButtonState();
+        });
+        
+        socket.on('work_area_updated', (data) => {
+            workerArea = data.work_area;
+            if (typeof data.waiting_for_helper !== 'undefined') {
+                waitingForHelper = Boolean(data.waiting_for_helper);
+            }
+            updateStartButtonState();
+            drawWorkerArea();
+        });
+        
+        // Server tells us whether advancing is allowed (works in non-shared view:
+        // only booleans are sent, never the board layout).
+        socket.on('advance_state', (data) => {
+            requireComplete = Boolean(data.require_complete);
+            canAdvance = Boolean(data.can_advance);
+            refreshNextButton();
+        });
+        
+        // Server rejected an early "Next" click (board not complete yet).
+        socket.on('advance_blocked', (data) => {
+            if (currentPuzzleInfo && currentPuzzleInfo.has_next) {
+                document.getElementById('nextPuzzleBtn').style.display = 'inline-block';
+            }
+            canAdvance = false;
+            refreshNextButton();
+            addChatMessage('system', (data && data.message) || 'All target pieces must be correctly placed before continuing.');
+        });
+        
+        socket.on('target_updated', (data) => {
+            targetArea = data.target_area;
+            
+            // Update puzzle info if available
+            if (data.trial_info) {
+                currentPuzzleInfo = data.trial_info;
+                document.getElementById('puzzleInfo').textContent = 
+                    `Puzzle: ${data.trial_info.current}/${data.trial_info.total}`;
+            }
+            
+            // Update shared view setting
+            if (data.shared_view !== undefined) {
+                sharedView = data.shared_view;
+                if (!sharedView) {
+                    document.getElementById('workerProgressContainer').style.display = 'none';
+                } else {
+                    document.getElementById('workerProgressContainer').style.display = 'block';
+                }
+            }
+            
+            drawTargetArea();
+
+            const groupLabel = data.puzzle_group ? ` – ${data.puzzle_group}` : '';
+            if (data.trial_number && data.total_trials) {
+                document.getElementById('trialStatus').textContent = `Trial ${data.trial_number} of ${data.total_trials}${groupLabel} (${data.num_pieces} pieces)`;
+                // addChatMessage('system', `New trial started with ${data.num_pieces} pieces${groupLabel}`);
+                addChatMessage('system', `New trial started.`);
+                
+                // Re-enable chat input when new trial starts
+                document.getElementById('chatInput').disabled = false;
+                document.getElementById('sendBtn').disabled = false;
+                document.getElementById('chatInput').placeholder = 'Type your guidance...';
+            } else {
+                document.getElementById('trialStatus').textContent = 'No active trial';
+                // addChatMessage('system', 'Target board cleared. Ready for next session.');
+            }
+        });
+        
+        socket.on('trial_started', (data) => {
+            addChatMessage('system', data.message);
+            
+            // Re-enable chat input when new trial starts
+            document.getElementById('chatInput').disabled = false;
+            document.getElementById('sendBtn').disabled = false;
+            document.getElementById('chatInput').placeholder = 'Type your guidance...';
+            
+            // Update puzzle info display
+            if (data.trial_info) {
+                currentPuzzleInfo = data.trial_info;
+                document.getElementById('puzzleInfo').textContent = 
+                    `Puzzle: ${data.trial_info.current}/${data.trial_info.total}`;
+                document.getElementById('trialStatus').textContent = 
+                    `Active: ${data.puzzle_info.group} (${data.num_pieces} pieces)`;
+                
+                // Gating for this puzzle: at start the board is empty, so if this
+                // puzzle requires completion, advancing is not yet allowed.
+                requireComplete = Boolean(data.require_complete);
+                canAdvance = !requireComplete;
+                
+                // Show next puzzle button if there are more puzzles
+                if (data.trial_info.has_next) {
+                    document.getElementById('nextPuzzleBtn').style.display = 'inline-block';
+                    refreshNextButton();
+                } else {
+                    // Last puzzle - hide next puzzle button and show finish button
+                    document.getElementById('nextPuzzleBtn').style.display = 'none';
+                    // Show Leave Session button on the last puzzle
+                    document.getElementById('leaveBtn').style.display = 'inline-block';
+                }
+            }
+            
+            // Hide start button after first trial
+            document.getElementById('startTrialBtn').style.display = 'none';
+            
+            waitingForHelper = false;
+            updateStartButtonState();
+        });
+        
+        socket.on('trial_completed', (data) => {
+            // Disable chat input when trial is complete
+            document.getElementById('chatInput').disabled = true;
+            document.getElementById('sendBtn').disabled = true;
+            document.getElementById('chatInput').placeholder = 'Trial complete - click Next Puzzle to continue';
+            addChatMessage('system', data.message);
+        });
+        
+        socket.on('all_trials_complete', (data) => {
+            addChatMessage('system', data.message);
+            document.getElementById('nextPuzzleBtn').style.display = 'none';
+            document.getElementById('puzzleInfo').textContent = '✓ All Puzzles Complete!';
+            document.getElementById('trialStatus').textContent = 'Session Complete';
+            
+            // Show the Leave Session button now that all puzzles are done
+            document.getElementById('leaveBtn').style.display = 'inline-block';
+            
+            // Show questionnaire URL if available
+            if (data.questionnaire_url) {
+                addChatMessage('system', '');
+                addChatMessage('system', '📋 Please complete the following questionnaire to finish the study:');
+                addChatMessage('system', '');
+                addChatMessage('system', data.questionnaire_url);
+                addChatMessage('system', '');
+                addChatMessage('system', '💡 Copy the link above and open it in a new browser tab.');
+            }
+        });
+        
+        socket.on('chat_message', (data) => {
+            // Hide AI thinking indicator when receiving a message
+            if (data.is_llm) {
+                hideAIThinking();
+            }
+            
+            addChatMessage(data.sender, data.message, data.is_llm);
+            
+            if (workerMode === 'llm') {
+                if (data.sender === 'worker') {
+                    waitingForHelper = true;
+                    // Show AI thinking for worker when worker is LLM
+                    hideAIThinking();
+                } else if (data.sender === 'helper') {
+                    waitingForHelper = false;
+                }
+                updateStartButtonState();
+            }
+        });
+        
+        socket.on('error', (data) => {
+            showStatus(data.message, 'error');
+            if (startTrialBtn) {
+                updateStartButtonState();
+            }
+        });
+        
+        socket.on('llm_thinking', (data) => {
+            showAIThinking(data.role);
+        });
+        
+        socket.on('llm_done_thinking', (data) => {
+            hideAIThinking();
+        });
+        
+        socket.on('trial_completed', (data) => {
+            // Disable chat input when trial is complete
+            document.getElementById('chatInput').disabled = true;
+            document.getElementById('sendBtn').disabled = true;
+            document.getElementById('chatInput').placeholder = 'Trial complete - click Next Puzzle to continue';
+            hideAIThinking();
+            
+            // Remove any "waiting for helper" system messages
+            const chatDiv = document.getElementById('chatMessages');
+            const systemMessages = chatDiv.querySelectorAll('.chat-message.system');
+            systemMessages.forEach(msg => {
+                if (msg.textContent.includes('AI Worker waiting for helper response')) {
+                    msg.remove();
+                }
+            });
+        });
+
+        socket.on('session_ended', (data) => {
+            addChatMessage('system', data.message);
+            currentTrialNumber = 0;
+            startButtonMode = 'start';
+            if (startTrialBtn) {
+                startTrialBtn.textContent = 'Start New Trial';
+                waitingForHelper = false;
+                updateStartButtonState();
+            }
+            document.getElementById('trialStatus').textContent = 'No active trial';
+        });
+
+        socket.on('session_status', (data) => {
+            showStatus(data.message, data.status === 'complete' ? 'info' : 'warning');
+            if (startTrialBtn) {
+                if (data.status === 'complete') {
+                    startButtonMode = 'end';
+                    startTrialBtn.textContent = 'End Session';
+                } else {
+                    startButtonMode = 'start';
+                    startTrialBtn.textContent = 'Start New Trial';
+                }
+                waitingForHelper = false;
+                updateStartButtonState();
+            }
+        });
+        
+        // Drawing functions
+        
+        // Pre-load all piece images for synchronous drawing
+        function preloadPieceImages() {
+            for (let i = 0; i < 24; i++) {
+                if (pieceImages[i]) {
+                    const img = new Image();
+                    img.src = 'data:image/png;base64,' + pieceImages[i].data;
+                    loadedImages[i] = img;
+                }
+            }
+        }
+        
+        function drawWorkerArea() {
+            workerCtx.clearRect(0, 0, workerCanvas.width, workerCanvas.height);
+            
+            // Draw pieces (no grid)
+            for (let y = 0; y < GRID_SIZE; y++) {
+                for (let x = 0; x < GRID_SIZE; x++) {
+                    const pieceIdx = workerArea[y][x];
+                    if (pieceIdx !== null && loadedImages[pieceIdx] && loadedImages[pieceIdx].complete) {
+                        // Use pre-loaded image for synchronous drawing
+                        workerCtx.drawImage(loadedImages[pieceIdx], x * PIECE_SIZE + 5, y * PIECE_SIZE + 5, PIECE_SIZE - 10, PIECE_SIZE - 10);
+                    } else if (pieceIdx !== null && pieceImages[pieceIdx]) {
+                        // Fallback: create new image if pre-loaded not available
+                        const img = new Image();
+                        img.src = 'data:image/png;base64,' + pieceImages[pieceIdx].data;
+                        img.onload = () => {
+                            loadedImages[pieceIdx] = img;  // Cache it
+                            workerCtx.drawImage(img, x * PIECE_SIZE + 5, y * PIECE_SIZE + 5, PIECE_SIZE - 10, PIECE_SIZE - 10);
+                        };
+                    }
+                }
+            }
+        }
+        
+        function drawTargetArea() {
+            targetCtx.clearRect(0, 0, targetCanvas.width, targetCanvas.height);
+            
+            // // Draw grid lines
+            // targetCtx.strokeStyle = '#ddd';
+            // targetCtx.lineWidth = 0;
+            
+            // // Draw vertical lines
+            // for (let x = 0; x <= GRID_SIZE; x++) {
+            //     targetCtx.beginPath();
+            //     targetCtx.moveTo(x * PIECE_SIZE, 0);
+            //     targetCtx.lineTo(x * PIECE_SIZE, GRID_SIZE * PIECE_SIZE);
+            //     targetCtx.stroke();
+            // }
+            
+            // // Draw horizontal lines
+            // for (let y = 0; y <= GRID_SIZE; y++) {
+            //     targetCtx.beginPath();
+            //     targetCtx.moveTo(0, y * PIECE_SIZE);
+            //     targetCtx.lineTo(GRID_SIZE * PIECE_SIZE, y * PIECE_SIZE);
+            //     targetCtx.stroke();
+            // }
+            
+            // Draw pieces
+            for (let y = 0; y < GRID_SIZE; y++) {
+                for (let x = 0; x < GRID_SIZE; x++) {
+                    const pieceIdx = targetArea[y][x];
+                    if (pieceIdx !== null && loadedImages[pieceIdx] && loadedImages[pieceIdx].complete) {
+                        // Use pre-loaded image for synchronous drawing
+                        targetCtx.drawImage(loadedImages[pieceIdx], x * PIECE_SIZE + 5, y * PIECE_SIZE + 5, PIECE_SIZE - 10, PIECE_SIZE - 10);
+                    } else if (pieceIdx !== null && pieceImages[pieceIdx]) {
+                        // Fallback: create new image if pre-loaded not available
+                        const img = new Image();
+                        img.src = 'data:image/png;base64,' + pieceImages[pieceIdx].data;
+                        img.onload = () => {
+                            loadedImages[pieceIdx] = img;  // Cache it
+                            targetCtx.drawImage(img, x * PIECE_SIZE + 5, y * PIECE_SIZE + 5, PIECE_SIZE - 10, PIECE_SIZE - 10);
+                        };
+                    }
+                }
+            }
+        }
+        
+        // Chat functions
+        function addChatMessage(sender, message, isLLM = false) {
+            const chatDiv = document.getElementById('chatMessages');
+            const msgDiv = document.createElement('div');
+            msgDiv.className = `chat-message ${sender}`;
+            
+            let senderLabel = sender;
+            if (sender === 'worker') {
+                senderLabel = isLLM ? 'Worker (AI) 🤖' : 'Worker';
+            } else if (sender === 'helper') {
+                senderLabel = isLLM ? 'You (AI) 🤖' : 'You';
+            } else {
+                senderLabel = 'System';
+            }
+            
+            // Convert newlines to <br> tags for proper HTML rendering
+            const formattedMessage = message.replace(/\n/g, '<br>');
+            msgDiv.innerHTML = `<strong>${senderLabel}:</strong> ${formattedMessage}`;
+            chatDiv.appendChild(msgDiv);
+            chatDiv.scrollTop = chatDiv.scrollHeight;
+        }
+        
+        document.getElementById('sendBtn').addEventListener('click', sendMessage);
+        document.getElementById('chatInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') sendMessage();
+        });
+        
+        function sendMessage() {
+            const input = document.getElementById('chatInput');
+            const message = input.value.trim();
+            
+            if (!message) return;
+            
+            socket.emit('send_message', {
+                sender: 'helper',
+                message: message,
+                flask_user_id: flaskUserId,
+                flask_custom_session_id: flaskCustomSessionId,
+                flask_game_session_id: flaskGameSessionId,
+                flask_authenticated: flaskAuthenticated
+            });
+            
+            input.value = '';
+            
+            // Show AI thinking indicator if worker is LLM (worker might respond)
+            if (workerMode === 'llm') {
+                showAIThinking('worker');
+            }
+        }
+        
+        // Start trial button
+        if (startTrialBtn) {
+            startTrialBtn.addEventListener('click', () => {
+                startTrialBtn.disabled = true;
+                socket.emit('start_trial', {
+                    flask_user_id: flaskUserId,
+                    flask_custom_session_id: flaskCustomSessionId,
+                    flask_game_session_id: flaskGameSessionId,
+                    flask_authenticated: flaskAuthenticated
+                });
+                addChatMessage('system', 'Starting puzzle...');
+            });
+        }
+        
+        // Next puzzle button
+        const nextPuzzleBtn = document.getElementById('nextPuzzleBtn');
+        if (nextPuzzleBtn) {
+            nextPuzzleBtn.addEventListener('click', () => {
+                // Under the completion condition, block until the board is correct.
+                if (requireComplete && !canAdvance) {
+                    addChatMessage('system', 'All target pieces must be correctly placed before continuing.');
+                    return;
+                }
+                nextPuzzleBtn.disabled = true;
+                socket.emit('next_trial', {
+                    flask_user_id: flaskUserId,
+                    flask_custom_session_id: flaskCustomSessionId,
+                    flask_game_session_id: flaskGameSessionId,
+                    flask_authenticated: flaskAuthenticated
+                });
+                addChatMessage('system', 'Loading next puzzle...');
+                nextPuzzleBtn.style.display = 'none';
+            });
+        }
+        
+        // Leave session button
+        document.getElementById('leaveBtn').addEventListener('click', () => {
+            const questionnaireUrl = '{{ questionnaire_url }}';
+            
+            if (questionnaireUrl) {
+                // Replace placeholders
+                const prolificPid = '{{ session.get("prolific_pid", "") }}';
+                const sessionId = '{{ session.get("session_id", "") }}';
+                const finalUrl = questionnaireUrl
+                    .replace('PROLIFIC_USER_ID', prolificPid || 'N/A')
+                    .replace('PROLIFIC_SESSION_ID', sessionId || 'N/A');
+                
+                // Show modal with URL
+                document.getElementById('questionnaireUrlDisplay').textContent = finalUrl;
+                document.getElementById('questionnaireModal').style.display = 'flex';
+                window.currentQuestionnaireUrl = finalUrl;
+            } else {
+                window.location.href = '/';
+            }
+        });
+        
+        // Copy URL function
+        function copyQuestionnaireUrl() {
+            const url = window.currentQuestionnaireUrl;
+            navigator.clipboard.writeText(url).then(() => {
+                alert('URL copied to clipboard!');
+            }).catch(() => {
+                // Fallback for older browsers
+                const textarea = document.createElement('textarea');
+                textarea.value = url;
+                document.body.appendChild(textarea);
+                textarea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textarea);
+                alert('URL copied to clipboard!');
+            });
+        }
+        
+        function closeAfterQuestionnaire() {
+            // Try to close window (works if opened by script)
+            window.close();
+            // If that didn't work, redirect to home
+            setTimeout(() => {
+                window.location.href = '/';
+            }, 100);
+        }
+        
+        // Status message
+        // AI thinking indicator
+        let aiThinkingMessageId = null;
+        
+        function showAIThinking(role) {
+            const chatDiv = document.getElementById('chatMessages');
+            
+            // Remove any existing thinking indicator
+            hideAIThinking();
+            
+            const msgDiv = document.createElement('div');
+            msgDiv.className = `chat-message ${role}`;
+            msgDiv.id = 'ai-thinking-indicator';
+            
+            const roleLabel = role === 'worker' ? 'Worker (AI) 🤖' : 'Helper (AI) 🤖';
+            msgDiv.innerHTML = `<strong>${roleLabel}</strong><span style="color: #666; font-style: italic;">● ● ● thinking...</span>`;
+            
+            chatDiv.appendChild(msgDiv);
+            chatDiv.scrollTop = chatDiv.scrollHeight;
+            
+            // Add pulsing animation
+            const dots = msgDiv.querySelector('span');
+            let dotCount = 0;
+            aiThinkingMessageId = setInterval(() => {
+                dotCount = (dotCount + 1) % 4;
+                dots.textContent = '● '.repeat(dotCount || 1) + 'thinking...';
+            }, 500);
+            
+            // Disable the Next Puzzle button while AI is thinking
+            const nextBtn = document.getElementById('nextPuzzleBtn');
+            if (nextBtn) {
+                nextBtn.disabled = true;
+            }
+        }
+        
+        function hideAIThinking() {
+            const indicator = document.getElementById('ai-thinking-indicator');
+            if (indicator) {
+                indicator.remove();
+            }
+            if (aiThinkingMessageId) {
+                clearInterval(aiThinkingMessageId);
+                aiThinkingMessageId = null;
+            }
+            
+            // Re-enable the Next Puzzle button when AI is done thinking
+            const nextBtn = document.getElementById('nextPuzzleBtn');
+            if (nextBtn && nextBtn.style.display !== 'none') {
+                nextBtn.disabled = false;
+            }
+        }
+        
+        function showStatus(message, type = 'info') {
+            const statusDiv = document.getElementById('statusMessage');
+            statusDiv.textContent = message;
+            statusDiv.className = `status-message ${type} show`;
+            
+            // Show next puzzle button if puzzle is complete
+            if (message.includes('complete') && currentPuzzleInfo && currentPuzzleInfo.has_next) {
+                document.getElementById('nextPuzzleBtn').style.display = 'inline-block';
+                document.getElementById('nextPuzzleBtn').disabled = false;
+            }
+            
+            setTimeout(() => {
+                statusDiv.classList.remove('show');
+            }, 3000);
+        }
+    </script>
+</body>
+</html>

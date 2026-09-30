@@ -1,0 +1,65 @@
+# Systemd service file for Puzzle Collaboration Web App
+# 
+# Installation instructions:
+# 1. Copy this file to /etc/systemd/system/puzzle-webapp.service
+#    sudo cp puzzle-webapp.service /etc/systemd/system/
+#
+# 2. Update the paths in this file:
+#    - WorkingDirectory: Full path to the puzzle directory
+#    - ExecStart: Full path to the run_web_app.sh script
+#    - User: The user that should run the service
+#    - Group: The group that should run the service
+#
+# 3. Reload systemd daemon:
+#    sudo systemctl daemon-reload
+#
+# 4. Enable the service to start on boot:
+#    sudo systemctl enable puzzle-webapp
+#
+# 5. Start the service:
+#    sudo systemctl start puzzle-webapp
+#
+# 6. Check status:
+#    sudo systemctl status puzzle-webapp
+#
+# 7. View logs:
+#    sudo journalctl -u puzzle-webapp -f
+#
+# To stop the service:
+#    sudo systemctl stop puzzle-webapp
+#
+# To restart the service:
+#    sudo systemctl restart puzzle-webapp
+
+[Unit]
+Description=Puzzle Collaboration Web Application
+After=network.target
+
+[Service]
+Type=simple
+User=www-data
+Group=www-data
+WorkingDirectory=/var/www/puzzle-webapp/src/common_ground/puzzle
+Environment="PATH=/var/www/puzzle-webapp/src/common_ground/puzzle/venv/bin:/usr/local/bin:/usr/bin:/bin"
+ExecStart=/var/www/puzzle-webapp/src/common_ground/puzzle/venv/bin/python3 web_app.py --worker --run_study
+Restart=always
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=puzzle-webapp
+
+# Security settings
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/www/puzzle-webapp/src/common_ground/puzzle/logs
+ReadWritePaths=/var/www/puzzle-webapp/src/common_ground/puzzle/conversations.db
+
+# Resource limits
+LimitNOFILE=65536
+MemoryLimit=1G
+CPUQuota=200%
+
+[Install]
+WantedBy=multi-user.target

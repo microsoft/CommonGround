@@ -1,0 +1,19 @@
+# Local environment and caches
+.env
+*.egg-info/
+__pycache__/
+*.py[cod]
+
+# Azure App Service deployment configuration (kept locally)
+/.deployment
+
+# Frozen snapshots and rendered board images are supplied locally.
+/stimuli/boards/
+/stimuli/snapshots/
+
+# Live credentials and newly collected participant data
+data/participant_roster.csv
+data/raw/
+data/gradings/
+data/exports/
+data/roster_snapshots/

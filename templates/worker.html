@@ -1,0 +1,716 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Worker View - Puzzle Collaboration</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+</head>
+<body>
+    <div class="header">
+        <h1>👷 Worker View</h1>
+        <div class="session-info">
+            <span id="puzzleInfo" style="font-weight: bold; margin-right: 20px;">Puzzle: -/-</span>
+            <span>Helper Mode: <strong id="helperMode">-</strong></span>
+            <span id="helperStatus" style="display: none; color: #4CAF50;">🤖 AI Helper Active</span>
+            <span id="waitingIndicator" class="waiting" style="display: none;">⏳ Waiting for helper...</span>
+            {% if session.get('role') == 'admin' %}
+            <a href="/admin/download_logs" style="padding: 5px 15px; background: #2196F3; color: white; text-decoration: none; border-radius: 4px; font-size: 14px; margin-left: 20px;">📦 Download Logs</a>
+            {% endif %}
+        </div>
+    </div>
+    
+    <div class="main-container">
+        <div class="game-section">
+            <div class="canvas-container">
+                <h3>Work Area</h3>
+                <canvas id="workCanvas" width="290" height="290"></canvas>
+                <div class="controls">
+                    <button id="startTrialBtn" class="control-btn">Start Puzzle 1</button>
+                    <button id="nextPuzzleBtn" class="control-btn" style="display: none;">Next Puzzle</button>
+                    <button id="nextTurnBtn" class="control-btn" style="display: none;">Next Turn</button>
+                    <button id="leaveBtn" class="control-btn secondary" style="display: none;">Leave Session</button>
+                </div>
+            </div>
+            
+            <div class="canvas-container">
+                <h3>Available Pieces (Staging Area)</h3>
+                <canvas id="stagingCanvas" width="145" height="387"></canvas>
+                <p class="help-text">Click piece to select, click board to place/move</p>
+            </div>
+            
+            <div class="chat-section">
+                <h3>Chat with Helper</h3>
+                <div id="chatMessages" class="chat-messages"></div>
+                <div class="chat-input-container">
+                    <input type="text" id="chatInput" placeholder="Type your message...">
+                    <button id="sendBtn">Send</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div id="statusMessage" class="status-message"></div>
+    
+    <!-- Questionnaire Modal -->
+    <div id="questionnaireModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 10000; justify-content: center; align-items: center;">
+        <div style="background: white; padding: 40px; border-radius: 10px; max-width: 600px; text-align: center;">
+            <h2 style="color: #4CAF50; margin-bottom: 20px;">🎉 Thank You for Participating!</h2>
+            <p style="font-size: 18px; margin-bottom: 30px;">Please copy the URL below and open it in a new tab to complete the questionnaire:</p>
+            <div style="background: #f5f5f5; padding: 20px; border-radius: 5px; margin-bottom: 20px; word-break: break-all; font-family: monospace; font-size: 14px; border: 2px solid #ddd;" id="questionnaireUrlDisplay"></div>
+            <button onclick="copyQuestionnaireUrl()" style="background: #2196F3; color: white; border: none; padding: 12px 30px; border-radius: 5px; font-size: 16px; cursor: pointer; margin-bottom: 20px;">📋 Copy URL</button>
+            <p style="font-size: 14px; color: #666; margin-top: 20px;">After completing the questionnaire, you can close this window.</p>
+        </div>
+    </div>
+    
+    <script>
+        const socket = io({
+            reconnection: true,
+            reconnectionDelay: 1000,
+            reconnectionDelayMax: 5000,
+            reconnectionAttempts: Infinity,
+            timeout: 20000,
+            pingTimeout: 60000,
+            pingInterval: 25000
+        });
+        let sessionId = null;
+        let hasJoinedSession = false;  // Track if we've joined to avoid double-joining
+        let workerMode = 'human';
+        let helperMode = 'human';
+        let sharedView = true;  // Whether helper can see worker's board
+        let pieceImages = {};
+        let loadedImages = {};  // Pre-loaded Image objects for synchronous drawing
+        let workArea = Array(6).fill(null).map(() => Array(6).fill(null));
+        let waitingForHelper = false;
+        let selectedPiece = null;  // Index of selected piece from staging
+        let selectedWorkPiece = null;  // {x, y} of selected piece from work area
+        let currentPuzzleInfo = null;
+        let requireComplete = false;  // Current puzzle gates "Next" until board correct
+        let canAdvance = true;        // Server-authoritative: all target pieces placed?
+        
+        // Canvas setup
+        const workCanvas = document.getElementById('workCanvas');
+        const workCtx = workCanvas.getContext('2d');
+        const stagingCanvas = document.getElementById('stagingCanvas');
+        const stagingCtx = stagingCanvas.getContext('2d');
+        
+        const GRID_SIZE = 6;
+        const PIECE_SIZE = 48.3;
+        
+        // Get Flask session data passed from server (defined globally for access in event handlers)
+        const flaskUserId = '{{ session.get("user_id", "") }}';
+        const flaskCustomSessionId = '{{ session.get("custom_session_id", "") }}';
+        const flaskGameSessionId = '{{ session.get("game_session_id", "") }}';
+        const flaskAuthenticated = '{{ session.get("authenticated", False) }}' === 'True';
+        
+        // Function to join session (used on initial load and reconnect)
+        function joinSession() {
+            socket.emit('join_as_worker', {
+                worker_mode: workerMode,
+                helper_mode: helperMode,
+                shared_view: sharedView,
+                flask_user_id: flaskUserId,
+                flask_custom_session_id: flaskCustomSessionId,
+                flask_game_session_id: flaskGameSessionId,
+                flask_authenticated: flaskAuthenticated
+            });
+            console.log('[RECONNECT] Joining/rejoining session with game_session_id:', flaskGameSessionId);
+        }
+        
+        // Handle reconnection - rejoin the session
+        socket.on('connect', () => {
+            console.log('[RECONNECT] Socket connected/reconnected, socket.id:', socket.id);
+            // Only rejoin if we've already joined before (this is a reconnection, not initial connection)
+            if (hasJoinedSession && sessionId) {
+                console.log('[RECONNECT] Rejoining existing session:', sessionId);
+                joinSession();
+            } else {
+                console.log('[RECONNECT] Initial connection, waiting for page load to join');
+            }
+        });
+        
+        // Initialize
+        window.addEventListener('load', () => {
+            // Check for auto-start parameters from server
+            const autoWorker = '{{ auto_worker }}';
+            const autoHelper = '{{ auto_helper }}';
+            const serverSharedView = '{{ shared_view }}' === 'true';
+            
+            console.log('[DEBUG] Flask session data:', {
+                user_id: flaskUserId,
+                custom_session_id: flaskCustomSessionId,
+                authenticated: flaskAuthenticated
+            });
+            
+            // Use auto-start params if available, otherwise fallback to sessionStorage
+            if (autoWorker && autoWorker !== 'None') {
+                workerMode = autoWorker;
+                helperMode = autoHelper;
+                sharedView = serverSharedView;
+                // Store for consistency
+                sessionStorage.setItem('workerMode', workerMode);
+                sessionStorage.setItem('helperMode', helperMode);
+                sessionStorage.setItem('sharedView', sharedView);
+            } else {
+                workerMode = sessionStorage.getItem('workerMode') || 'human';
+                helperMode = sessionStorage.getItem('helperMode') || 'human';
+                sharedView = sessionStorage.getItem('sharedView') === 'true';
+            }
+            
+            // Initial join on page load
+            joinSession();
+        });
+        
+        // Socket event handlers
+        socket.on('joined', (data) => {
+            sessionId = data.session_id;
+            hasJoinedSession = true;  // Mark that we've successfully joined
+            pieceImages = data.piece_images;
+            workerMode = data.worker_mode;
+            helperMode = data.helper_mode;
+            
+            // Pre-load all piece images for synchronous drawing
+            preloadPieceImages();
+            
+            document.getElementById('helperMode').textContent = helperMode;
+            
+            // Handle LLM worker mode - show as spectator
+            if (workerMode === 'llm') {
+                addChatMessage('system', '🤖 AI Worker mode active - Watch the AI solve the puzzle!');
+                addChatMessage('system', '💡 Open the helper interface to start trials and provide guidance.');
+                // Disable all interactions
+                workCanvas.style.pointerEvents = 'none';
+                stagingCanvas.style.pointerEvents = 'none';
+                document.getElementById('chatInput').disabled = true;
+                document.getElementById('sendBtn').disabled = true;
+                document.getElementById('nextTurnBtn').style.display = 'none';
+            }
+            // Show AI helper status if applicable
+            else if (helperMode === 'llm') {
+                document.getElementById('helperStatus').style.display = 'inline';
+                document.getElementById('startTrialBtn').style.display = 'inline-block';
+                // Hide next turn button in LLM mode (not needed - can place freely)
+                document.getElementById('nextTurnBtn').style.display = 'none';
+            }
+            
+            drawStagingArea();
+            drawWorkArea();
+            
+            if (workerMode === 'human') {
+                addChatMessage('system', `Connected! ${helperMode === 'llm' ? 'AI Helper is ready.' : 'Waiting for human helper to join...'}`);
+                
+                // If LLM helper, show instructions
+                if (helperMode === 'llm') {
+                    setTimeout(() => {
+                        addChatMessage('system', '💡 Click "Start Puzzle 1" to begin. Click a piece to select it, then click where you want to place it. Send messages to get AI guidance.');
+                    }, 1000);
+                }
+            }
+        });
+        
+        socket.on('work_area_updated', (data) => {
+            workArea = data.work_area;
+            waitingForHelper = data.waiting_for_helper;
+            
+            document.getElementById('waitingIndicator').style.display = waitingForHelper ? 'inline' : 'none';
+            
+            drawWorkArea();
+        });
+        
+        // Enable/disable the "Next Puzzle" button based on the completion gate.
+        function refreshNextButton() {
+            const btn = document.getElementById('nextPuzzleBtn');
+            if (!btn || btn.style.display === 'none') {
+                return;
+            }
+            const blocked = requireComplete && !canAdvance;
+            btn.disabled = blocked;
+            btn.title = blocked
+                ? 'Place all target pieces correctly before continuing'
+                : '';
+        }
+        
+        // Server tells us whether advancing is allowed (booleans only).
+        socket.on('advance_state', (data) => {
+            requireComplete = Boolean(data.require_complete);
+            canAdvance = Boolean(data.can_advance);
+            refreshNextButton();
+        });
+        
+        // Server rejected an early "Next" click (board not complete yet).
+        socket.on('advance_blocked', (data) => {
+            if (currentPuzzleInfo && currentPuzzleInfo.has_next) {
+                document.getElementById('nextPuzzleBtn').style.display = 'inline-block';
+            }
+            canAdvance = false;
+            refreshNextButton();
+            addChatMessage('system', (data && data.message) || 'All target pieces must be correctly placed before continuing.');
+        });
+        
+        socket.on('trial_started', (data) => {
+            addChatMessage('system', data.message);
+            
+            // Update puzzle info display
+            if (data.trial_info) {
+                currentPuzzleInfo = data.trial_info;
+                document.getElementById('puzzleInfo').textContent = 
+                    `Puzzle: ${data.trial_info.current}/${data.trial_info.total}`;
+                
+                // Gating for this puzzle: at start the board is empty, so if this
+                // puzzle requires completion, advancing is not yet allowed.
+                requireComplete = Boolean(data.require_complete);
+                canAdvance = !requireComplete;
+                
+                // Show next puzzle button if there are more puzzles
+                if (data.trial_info.has_next) {
+                    document.getElementById('nextPuzzleBtn').style.display = 'inline-block';
+                    refreshNextButton();
+                } else {
+                    // Last puzzle - hide next puzzle button and show finish button
+                    document.getElementById('nextPuzzleBtn').style.display = 'none';
+                    // Show Leave Session button on the last puzzle
+                    document.getElementById('leaveBtn').style.display = 'inline-block';
+                }
+            }
+            
+            // Hide start button after first trial
+            document.getElementById('startTrialBtn').style.display = 'none';
+            
+            // Show next turn button for human helper mode
+            if (helperMode === 'human') {
+                document.getElementById('nextTurnBtn').style.display = 'inline-block';
+            }
+            
+            // Re-enable chat input when trial starts
+            document.getElementById('chatInput').disabled = false;
+            document.getElementById('sendBtn').disabled = false;
+        });
+        
+        socket.on('trial_completed', (data) => {
+            // Disable chat input when trial is complete
+            document.getElementById('chatInput').disabled = true;
+            document.getElementById('sendBtn').disabled = true;
+            addChatMessage('system', data.message);
+        });
+        
+        socket.on('all_trials_complete', (data) => {
+            addChatMessage('system', data.message);
+            document.getElementById('nextPuzzleBtn').style.display = 'none';
+            document.getElementById('puzzleInfo').textContent = '✓ All Puzzles Complete!';
+            
+            // Show the Leave Session button now that all puzzles are done
+            document.getElementById('leaveBtn').style.display = 'inline-block';
+            
+            // Show questionnaire URL if available
+            if (data.questionnaire_url) {
+                addChatMessage('system', '');
+                addChatMessage('system', '📋 Please complete the following questionnaire to finish the study:');
+                addChatMessage('system', '');
+                addChatMessage('system', data.questionnaire_url);
+                addChatMessage('system', '');
+                addChatMessage('system', '💡 Copy the link above and open it in a new browser tab.');
+            }
+        });
+        
+        socket.on('action_result', (data) => {
+            // Hide AI thinking indicator
+            hideAIThinking();
+            
+            // Show result using chat message instead of popup
+            if (data.success) {
+                addChatMessage('system', data.message);
+            } else {
+                addChatMessage('system', '❌ ' + data.message);
+            }
+        });
+        
+        socket.on('chat_message', (data) => {
+            console.log('Received chat message:', data);
+            console.log('Message length:', data.message.length);
+            console.log('Message content:', data.message);
+            
+            // Hide AI thinking indicator when receiving a message
+            if (data.is_llm) {
+                hideAIThinking();
+            }
+            
+            addChatMessage(data.sender, data.message, data.is_llm);
+        });
+        
+        socket.on('error', (data) => {
+            showStatus(data.message, 'error');
+        });
+        
+        socket.on('llm_thinking', (data) => {
+            showAIThinking(data.role);
+        });
+        
+        socket.on('llm_done_thinking', (data) => {
+            hideAIThinking();
+        });
+        
+        // Pre-load all piece images for synchronous drawing
+        function preloadPieceImages() {
+            for (let i = 0; i < 24; i++) {
+                if (pieceImages[i]) {
+                    const img = new Image();
+                    img.src = 'data:image/png;base64,' + pieceImages[i].data;
+                    loadedImages[i] = img;
+                }
+            }
+        }
+        
+        // Drawing functions
+        function drawWorkArea() {
+            workCtx.clearRect(0, 0, workCanvas.width, workCanvas.height);
+            
+            // Draw pieces (no grid)
+            for (let y = 0; y < GRID_SIZE; y++) {
+                for (let x = 0; x < GRID_SIZE; x++) {
+                    const pieceIdx = workArea[y][x];
+                    
+                    // Highlight selected piece
+                    if (selectedWorkPiece && selectedWorkPiece.x === x && selectedWorkPiece.y === y) {
+                        workCtx.fillStyle = 'rgba(76, 175, 80, 0.3)';
+                        workCtx.fillRect(x * PIECE_SIZE, y * PIECE_SIZE, PIECE_SIZE, PIECE_SIZE);
+                        workCtx.strokeStyle = '#4CAF50';
+                        workCtx.lineWidth = 3;
+                        workCtx.strokeRect(x * PIECE_SIZE, y * PIECE_SIZE, PIECE_SIZE, PIECE_SIZE);
+                    }
+                    
+                    if (pieceIdx !== null && loadedImages[pieceIdx] && loadedImages[pieceIdx].complete) {
+                        // Use pre-loaded image for synchronous drawing
+                        workCtx.drawImage(loadedImages[pieceIdx], x * PIECE_SIZE + 5, y * PIECE_SIZE + 5, PIECE_SIZE - 10, PIECE_SIZE - 10);
+                    } else if (pieceIdx !== null && pieceImages[pieceIdx]) {
+                        // Fallback: create new image if pre-loaded not available
+                        const img = new Image();
+                        img.src = 'data:image/png;base64,' + pieceImages[pieceIdx].data;
+                        img.onload = () => {
+                            loadedImages[pieceIdx] = img;  // Cache it
+                            workCtx.drawImage(img, x * PIECE_SIZE + 5, y * PIECE_SIZE + 5, PIECE_SIZE - 10, PIECE_SIZE - 10);
+                        };
+                    }
+                }
+            }
+        }
+        
+        function drawStagingArea() {
+            stagingCtx.clearRect(0, 0, stagingCanvas.width, stagingCanvas.height);
+            
+            const cols = 3;
+            const rows = 8;
+            
+            for (let i = 0; i < 24; i++) {
+                const col = Math.floor(i / rows);
+                const row = i % rows;
+                const x = col * PIECE_SIZE;
+                const y = row * PIECE_SIZE;
+                
+                // Highlight selected piece
+                if (selectedPiece === i) {
+                    stagingCtx.fillStyle = 'rgba(76, 175, 80, 0.3)';
+                    stagingCtx.fillRect(x, y, PIECE_SIZE, PIECE_SIZE);
+                    stagingCtx.strokeStyle = '#4CAF50';
+                    stagingCtx.lineWidth = 3;
+                } else {
+                    stagingCtx.strokeStyle = '#999';
+                    stagingCtx.lineWidth = 1;
+                }
+                
+                stagingCtx.strokeRect(x, y, PIECE_SIZE, PIECE_SIZE);
+                
+                if (loadedImages[i] && loadedImages[i].complete) {
+                    // Use pre-loaded image for synchronous drawing
+                    stagingCtx.drawImage(loadedImages[i], x + 5, y + 5, PIECE_SIZE - 10, PIECE_SIZE - 10);
+                } else if (pieceImages[i]) {
+                    // Fallback: create new image if pre-loaded not available
+                    const img = new Image();
+                    img.src = 'data:image/png;base64,' + pieceImages[i].data;
+                    img.onload = () => {
+                        loadedImages[i] = img;  // Cache it
+                        stagingCtx.drawImage(img, x + 5, y + 5, PIECE_SIZE - 10, PIECE_SIZE - 10);
+                    };
+                }
+            }
+        }
+        
+        // Click on staging area to select a piece
+        stagingCanvas.addEventListener('click', (e) => {
+            const rect = stagingCanvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            
+            const cols = 3;
+            const rows = 8;
+            const col = Math.floor(x / PIECE_SIZE);
+            const row = Math.floor(y / PIECE_SIZE);
+            const idx = col * rows + row;
+            
+            if (idx < 24) {
+                // If we have a piece selected from work area, clicking staging removes it
+                if (selectedWorkPiece !== null) {
+                    socket.emit('remove_piece', {
+                        x: selectedWorkPiece.x,
+                        y: selectedWorkPiece.y,
+                        flask_game_session_id: flaskGameSessionId,
+                        flask_custom_session_id: flaskCustomSessionId,
+                        flask_authenticated: flaskAuthenticated
+                    });
+                    selectedWorkPiece = null;
+                    drawWorkArea();  // Redraw to remove highlight
+                } else {
+                    // Select this piece from staging
+                    selectedPiece = idx;
+                    selectedWorkPiece = null;
+                    drawStagingArea();  // Redraw with highlight
+                }
+            }
+        });
+        
+        // Click on work area
+        workCanvas.addEventListener('click', (e) => {
+            if (waitingForHelper) {
+                showStatus('Please wait for helper response', 'warning');
+                return;
+            }
+            
+            const rect = workCanvas.getBoundingClientRect();
+            const x = Math.floor((e.clientX - rect.left) / PIECE_SIZE);
+            const y = Math.floor((e.clientY - rect.top) / PIECE_SIZE);
+            
+            if (x >= 0 && x < GRID_SIZE && y >= 0 && y < GRID_SIZE) {
+                const hasPiece = workArea[y] && workArea[y][x] !== null;
+                
+                if (selectedPiece !== null) {
+                    // We have a staging piece selected - place it here
+                    socket.emit('place_piece', {
+                        piece_idx: selectedPiece,
+                        x: x,
+                        y: y,
+                        flask_game_session_id: flaskGameSessionId,
+                        flask_custom_session_id: flaskCustomSessionId,
+                        flask_authenticated: flaskAuthenticated
+                    });
+                    selectedPiece = null;
+                    drawStagingArea();  // Redraw to remove highlight
+                } else if (selectedWorkPiece !== null) {
+                    // We have a work piece selected
+                    if (!hasPiece) {
+                        // Empty spot - move piece here
+                        socket.emit('move_piece', {
+                            from_x: selectedWorkPiece.x,
+                            from_y: selectedWorkPiece.y,
+                            to_x: x,
+                            to_y: y,
+                            flask_game_session_id: flaskGameSessionId,
+                            flask_custom_session_id: flaskCustomSessionId,
+                            flask_authenticated: flaskAuthenticated
+                        });
+                        selectedWorkPiece = null;
+                        drawWorkArea();  // Redraw to remove highlight
+                    } else {
+                        // Another piece - select this one instead
+                        selectedWorkPiece = {x: x, y: y};
+                        drawWorkArea();  // Redraw with new highlight
+                    }
+                } else if (hasPiece) {
+                    // No selection - select this work piece
+                    selectedWorkPiece = {x: x, y: y};
+                    selectedPiece = null;
+                    drawWorkArea();  // Redraw with highlight
+                }
+            }
+        });
+        
+        // Chat functions
+        function addChatMessage(sender, message, isLLM = false) {
+            console.log('addChatMessage called with:', {sender, message, isLLM});
+            const chatDiv = document.getElementById('chatMessages');
+            const msgDiv = document.createElement('div');
+            msgDiv.className = `chat-message ${sender}`;
+            
+            let senderLabel = sender;
+            if (sender === 'worker') {
+                senderLabel = isLLM ? 'You (AI) 🤖' : 'You';
+            } else if (sender === 'helper') {
+                senderLabel = isLLM ? 'Helper (AI) 🤖' : 'Helper';
+            } else {
+                senderLabel = 'System';
+            }
+            
+            // Convert newlines to <br> tags for proper HTML rendering
+            const formattedMessage = message.replace(/\n/g, '<br>');
+            console.log('Formatted message:', formattedMessage);
+            msgDiv.innerHTML = `<strong>${senderLabel}:</strong> ${formattedMessage}`;
+            chatDiv.appendChild(msgDiv);
+            chatDiv.scrollTop = chatDiv.scrollHeight;
+        }
+        
+        document.getElementById('sendBtn').addEventListener('click', sendMessage);
+        document.getElementById('chatInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') sendMessage();
+        });
+        
+        function sendMessage() {
+            const input = document.getElementById('chatInput');
+            const message = input.value.trim();
+            
+            if (!message) return;
+            
+            socket.emit('send_message', {
+                sender: 'worker',
+                message: message,
+                flask_user_id: flaskUserId,
+                flask_custom_session_id: flaskCustomSessionId,
+                flask_game_session_id: flaskGameSessionId,
+                flask_authenticated: flaskAuthenticated
+            });
+            
+            input.value = '';
+            
+            // Show AI thinking indicator if helper is LLM
+            if (helperMode === 'llm') {
+                showAIThinking('helper');
+            }
+        }
+        
+        // Next turn button
+        document.getElementById('nextTurnBtn').addEventListener('click', () => {
+            socket.emit('next_turn', {});
+            
+            // Show AI thinking indicator if worker is LLM
+            if (workerMode === 'llm') {
+                showAIThinking('worker');
+            }
+        });
+        
+        // Start trial button
+        document.getElementById('startTrialBtn').addEventListener('click', () => {
+            socket.emit('start_trial', {
+                flask_user_id: flaskUserId,
+                flask_custom_session_id: flaskCustomSessionId,
+                flask_game_session_id: flaskGameSessionId,
+                flask_authenticated: flaskAuthenticated
+            });
+            addChatMessage('system', 'Starting puzzle...');
+            document.getElementById('startTrialBtn').disabled = true;
+        });
+        
+        // Next puzzle button
+        document.getElementById('nextPuzzleBtn').addEventListener('click', () => {
+            // Under the completion condition, block until the board is correct.
+            if (requireComplete && !canAdvance) {
+                addChatMessage('system', 'All target pieces must be correctly placed before continuing.');
+                return;
+            }
+            socket.emit('next_trial', {
+                flask_user_id: flaskUserId,
+                flask_custom_session_id: flaskCustomSessionId,
+                flask_game_session_id: flaskGameSessionId,
+                flask_authenticated: flaskAuthenticated
+            });
+            addChatMessage('system', 'Loading next puzzle...');
+            document.getElementById('nextPuzzleBtn').disabled = true;  // Disable temporarily
+            document.getElementById('nextPuzzleBtn').style.display = 'none';
+        });
+        
+        // Leave session button
+        document.getElementById('leaveBtn').addEventListener('click', () => {
+            const questionnaireUrl = '{{ questionnaire_url }}';
+            
+            if (questionnaireUrl) {
+                // Replace placeholders
+                const prolificPid = '{{ session.get("prolific_pid", "") }}';
+                const sessionId = '{{ session.get("session_id", "") }}';
+                const finalUrl = questionnaireUrl
+                    .replace('PROLIFIC_USER_ID', prolificPid || 'N/A')
+                    .replace('PROLIFIC_SESSION_ID', sessionId || 'N/A');
+                
+                // Show modal with URL
+                document.getElementById('questionnaireUrlDisplay').textContent = finalUrl;
+                document.getElementById('questionnaireModal').style.display = 'flex';
+                window.currentQuestionnaireUrl = finalUrl;
+            } else {
+                window.location.href = '/';
+            }
+        });
+        
+        // Copy URL function
+        function copyQuestionnaireUrl() {
+            const url = window.currentQuestionnaireUrl;
+            navigator.clipboard.writeText(url).then(() => {
+                alert('URL copied to clipboard!');
+            }).catch(() => {
+                // Fallback for older browsers
+                const textarea = document.createElement('textarea');
+                textarea.value = url;
+                document.body.appendChild(textarea);
+                textarea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textarea);
+                alert('URL copied to clipboard!');
+            });
+        }
+        
+        function closeAfterQuestionnaire() {
+            // Try to close window (works if opened by script)
+            window.close();
+            // If that didn't work, redirect to home
+            setTimeout(() => {
+                window.location.href = '/';
+            }, 100);
+        }
+        
+        // Status message
+        // AI thinking indicator
+        let aiThinkingMessageId = null;
+        
+        function showAIThinking(role) {
+            const chatDiv = document.getElementById('chatMessages');
+            
+            // Remove any existing thinking indicator
+            hideAIThinking();
+            
+            const msgDiv = document.createElement('div');
+            msgDiv.className = `chat-message ${role}`;
+            msgDiv.id = 'ai-thinking-indicator';
+            
+            const roleLabel = role === 'helper' ? 'Helper (AI) 🤖' : 'Worker (AI) 🤖';
+            msgDiv.innerHTML = `<strong>${roleLabel}</strong><span style="color: #666; font-style: italic;">● ● ● thinking...</span>`;
+            
+            chatDiv.appendChild(msgDiv);
+            chatDiv.scrollTop = chatDiv.scrollHeight;
+            
+            // Add pulsing animation
+            const dots = msgDiv.querySelector('span');
+            let dotCount = 0;
+            aiThinkingMessageId = setInterval(() => {
+                dotCount = (dotCount + 1) % 4;
+                dots.textContent = '● '.repeat(dotCount || 1) + 'thinking...';
+            }, 500);
+        }
+        
+        function hideAIThinking() {
+            const indicator = document.getElementById('ai-thinking-indicator');
+            if (indicator) {
+                indicator.remove();
+            }
+            if (aiThinkingMessageId) {
+                clearInterval(aiThinkingMessageId);
+                aiThinkingMessageId = null;
+            }
+        }
+        
+        function showStatus(message, type = 'info') {
+            const statusDiv = document.getElementById('statusMessage');
+            statusDiv.textContent = message;
+            statusDiv.className = `status-message ${type} show`;
+            
+            setTimeout(() => {
+                statusDiv.classList.remove('show');
+            }, 3000);
+        }
+    </script>
+</body>
+</html>

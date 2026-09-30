@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}Login{% endblock %}
+{% block content %}
+  <h1>Log in to the study</h1>
+  <p class="lead">To begin, enter your <strong>Prolific ID</strong> and the
+    unique <strong>access code</strong> you were given for this study (a
+    32-character credential provided through Prolific).</p>
+  <form method="post" action="{{ url_for('study4.login') }}">
+    <div class="field">
+      <label for="prolific_id">Your Prolific ID</label>
+      <input type="text" id="prolific_id" name="prolific_id"
+             placeholder="your Prolific ID" autocomplete="off" required>
+    </div>
+    <div class="field">
+      <label for="credentials">Your access code</label>
+      <input type="text" id="credentials" name="credentials"
+             placeholder="32-character code" autocomplete="off" required>
+    </div>
+    {% if error %}<div class="error">{{ error }}</div>{% endif %}
+    <button class="btn" type="submit">Begin Study</button>
+  </form>
+{% endblock %}

@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}Admin — Data{% endblock %}
+{% block content %}
+  <h1>Admin — participant data</h1>
+  <p class="lead">Download the raw grading files and per-participant event logs.</p>
+
+  <p>
+    <a class="btn" href="{{ url_for('study4.admin_download_all') }}">Download all (.zip)</a>
+  </p>
+
+  <h2>Grading files ({{ gradings|length }})</h2>
+  {% if gradings %}
+  <ul class="steps">
+    {% for f in gradings %}
+    <li><a href="{{ url_for('study4.admin_download', kind='gradings', filename=f) }}">{{ f }}</a></li>
+    {% endfor %}
+  </ul>
+  {% else %}
+  <p class="muted">No grading files yet.</p>
+  {% endif %}
+
+  <h2>Raw event logs ({{ raw|length }})</h2>
+  {% if raw %}
+  <ul class="steps">
+    {% for f in raw %}
+    <li><a href="{{ url_for('study4.admin_download', kind='raw', filename=f) }}">{{ f }}</a></li>
+    {% endfor %}
+  </ul>
+  {% else %}
+  <p class="muted">No event logs yet.</p>
+  {% endif %}
+{% endblock %}

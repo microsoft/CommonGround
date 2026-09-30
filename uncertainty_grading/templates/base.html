@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Study{% endblock %} · Confidence Rating Study</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='study4.css') }}">
+</head>
+<body>
+  <div class="wrap {% block wrap_class %}{% endblock %}">
+    <div class="card">
+      {% block content %}{% endblock %}
+    </div>
+  </div>
+  {% block scripts %}{% endblock %}
+</body>
+</html>
