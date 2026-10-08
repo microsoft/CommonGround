@@ -9,10 +9,13 @@ from __future__ import annotations
 
 import csv
 import json
+import re
 import threading
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Dict, List, Optional
+
+from werkzeug.utils import secure_filename
 
 from .settings import settings as S
 
@@ -60,14 +63,19 @@ def list_snapshot_ids() -> List[str]:
 # --------------------------------------------------------------------------- #
 # Per-participant JSONL event log
 # --------------------------------------------------------------------------- #
+def _log_file(directory: Path, prefix: str, identifier: str) -> Path:
+    if not re.fullmatch(r"[A-Za-z0-9_-]+", identifier):
+        raise ValueError("Log identifiers must contain only ASCII letters, digits, '-' or '_'.")
+    filename = secure_filename(f"{prefix}_{identifier}.jsonl")
+    return directory / filename
+
+
 def _participant_file(participant_id: str) -> Path:
-    safe = "".join(c for c in participant_id if c.isalnum() or c in ("-", "_"))
-    return S.RAW_DIR / f"participant_{safe}.jsonl"
+    return _log_file(S.RAW_DIR, "participant", participant_id)
 
 
 def _grading_file(credentials: str) -> Path:
-    safe = "".join(c for c in credentials if c.isalnum() or c in ("-", "_"))
-    return S.GRADINGS_DIR / f"grading_{safe}.jsonl"
+    return _log_file(S.GRADINGS_DIR, "grading", credentials)
 
 
 def log_event(participant_id: str, event_type: str, data: Optional[Dict] = None,

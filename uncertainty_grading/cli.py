@@ -175,7 +175,7 @@ def serve(host: str | None, port: int | None, production: bool) -> int:
         return 0
 
     app = create_app({
-        "DEBUG": True,
+        "DEBUG": False,
         "HSTS_ENABLED": False,
         "SESSION_COOKIE_SECURE": False,
         "TRUST_PROXY_PROTO": False,
@@ -183,7 +183,10 @@ def serve(host: str | None, port: int | None, production: bool) -> int:
     listen_host = host or "127.0.0.1"
     listen_port = port or settings.PORT
     print(f"Serving local app at http://{listen_host}:{listen_port}")
-    app.run(host=listen_host, port=listen_port, debug=True, use_reloader=False)
+    app.run(
+        host=listen_host, port=listen_port,
+        debug=False, use_debugger=False, use_reloader=False,
+    )
     return 0
 
 
