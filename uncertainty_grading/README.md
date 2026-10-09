@@ -120,6 +120,11 @@ data\roster_snapshots\ roster backups created before changes
 
 They are empty in the cleaned distribution. Treat future contents and `participant_roster.csv` as sensitive study data.
 
+Event and grading log identifiers must be non-empty and contain only ASCII
+letters, digits, hyphens, or underscores. Invalid identifiers raise an error
+instead of being silently rewritten. Generated 32-character credentials and
+their existing log filenames are unchanged.
+
 The application uses local append-only files and should run as a single application instance. Do not scale to multiple instances without moving writes to shared durable storage.
 
 ## Frozen Stimuli
@@ -156,7 +161,7 @@ Common settings:
 | `UNCERTAINTY_GRADING_HOST` | `127.0.0.1` |
 | `UNCERTAINTY_GRADING_PORT` | `5004` |
 | `UNCERTAINTY_GRADING_SECRET_KEY` | insecure development value |
-| `UNCERTAINTY_GRADING_DEBUG` | `true` |
+| `UNCERTAINTY_GRADING_DEBUG` | `false` |
 | `UNCERTAINTY_GRADING_COOKIE_SECURE` | `true` |
 | `UNCERTAINTY_GRADING_TRUST_PROXY_PROTO` | `true` |
 | `UNCERTAINTY_GRADING_HSTS_ENABLED` | `true` |
@@ -167,6 +172,9 @@ Common settings:
 | `UNCERTAINTY_GRADING_PROLIFIC_COMPLETION_CODE` | empty |
 
 Local `run.ps1` disables Secure cookies, HSTS, and proxy trust for localhost HTTP without changing production defaults.
+The local CLI server also disables Flask debug mode, the interactive debugger,
+and the reloader, including when `FLASK_DEBUG` or a study debug setting is enabled.
+Use the production server below when serving participants.
 
 ## Production Run
 
