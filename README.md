@@ -257,7 +257,8 @@ AI calls also write the latest model-request payload to `last_message_sent.json`
 in the working directory, which must be writable. This debug file can contain
 conversation context and board images.
 
-Analysis notebooks are in [`log_analysis/`](log_analysis/).
+Local analysis notebooks and outputs under `log_analysis/` are excluded from
+version control and are not part of the source release.
 **Keep credentials, model-request payloads, conversation logs, and participant
 data out of version control.** AI modes send conversation and image data to the
 configured model provider; account for this when planning a study.
@@ -266,6 +267,24 @@ Active game state is held in server memory, not restored from the logs. Restarti
 the server loses active boards; multi-process or multi-instance deployment would
 require shared session state.
 
+### Public release boundary
+
+The source tree excludes local analysis, study data, generated credential files,
+environment overrides, and Word review documents. Publish approved transparency
+documentation separately as Markdown; do not add internal review drafts.
+Model endpoints and credentials must be configured locally rather than embedded
+in code or notebooks.
+
+Git ignore rules only affect future additions. Earlier commits can still contain
+excluded notebooks, snapshots, and boards. Review repository history and release
+archives before redistribution; removing files from the current tree does not
+remove previously published copies.
+
+The consent, login-help, and debrief screens contain wording and contacts from
+the original study. Review and replace those details with your own approved
+participant information before running a new study. They are not a generic
+consent or data-retention policy for downstream deployments.
+
 ## Companion rating application
 
 [`uncertainty_grading/`](uncertainty_grading/) is a separate Flask application for
@@ -273,12 +292,12 @@ collecting human ratings of AI Worker behavior. It presents frozen dialogue and
 board snapshots across conditions A-E, with ratings before or after a Worker
 response, rather than running live puzzle agents.
 
-Its frozen JSON snapshots and rendered board images are kept locally in
-`uncertainty_grading/stimuli/snapshots/` and
-`uncertainty_grading/stimuli/boards/`, respectively, and are not tracked by Git.
-Fresh checkouts need both sets of assets, matching the versioned manifests,
-before running the rating application. The main puzzle game generates its own
-images and does not depend on these directories.
+All original-study files under `uncertainty_grading/stimuli/` are supplied
+locally and excluded from Git and Python distribution packages. This includes
+the snapshot matrix and practice manifest as well as the frozen JSON snapshots
+and rendered board images. Fresh checkouts need matching, authorized copies of
+all four before running the rating application. The main puzzle game generates
+its own images and does not depend on these files.
 
 See its [README](uncertainty_grading/README.md) for its own setup, participant
 assignments, study conditions, and data-handling guidance.
@@ -320,7 +339,7 @@ not call external model endpoints.
 | [`templates/`](templates/), [`static/`](static/) | Browser interfaces and styling. |
 | [`web_logger.py`](web_logger.py) | Session event logging. |
 | [`tests/`](tests/) | Offline regression tests for web modes and AI request execution. |
-| [`uncertainty_grading/`](uncertainty_grading/) | Companion human-rating application and frozen study stimuli. |
+| [`uncertainty_grading/`](uncertainty_grading/) | Companion human-rating application; study manifests and stimuli are supplied locally. |
 
 Local launchers include [`run.ps1`](run.ps1) and [`run.sh`](run.sh). The existing
 [`run_web_app.ps1`](run_web_app.ps1), [`run_web_app.sh`](run_web_app.sh), and

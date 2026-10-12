@@ -7,13 +7,8 @@ __pycache__/
 # Azure App Service deployment configuration (kept locally)
 /.deployment
 
-# Frozen snapshots and rendered board images are supplied locally.
-/stimuli/boards/
-/stimuli/snapshots/
+# All original-study manifests, snapshots, and boards are supplied locally.
+/stimuli/
 
-# Live credentials and newly collected participant data
-data/participant_roster.csv
-data/raw/
-data/gradings/
-data/exports/
-data/roster_snapshots/
+# Credentials, participant data, exports, and roster backups are never versioned.
+/data/

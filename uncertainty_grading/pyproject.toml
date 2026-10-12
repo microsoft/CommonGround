@@ -20,14 +20,13 @@ uncertainty-grading = "uncertainty_grading.cli:main"
 [tool.setuptools]
 packages = ["uncertainty_grading"]
 package-dir = {uncertainty_grading = "."}
-include-package-data = true
+include-package-data = false
 
 [tool.setuptools.package-data]
 uncertainty_grading = [
     "templates/*.html",
     "static/**/*",
-    "stimuli/*.csv",
-    "stimuli/*.json",
-    "stimuli/boards/*.png",
-    "stimuli/snapshots/*.json",
 ]
+
+[tool.setuptools.exclude-package-data]
+uncertainty_grading = ["stimuli/*", "stimuli/**/*", "data/*", "data/**/*", ".env", ".env.*"]
