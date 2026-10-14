@@ -1,6 +1,15 @@
 # Secrets / local config
 .env
+.env.*
+!.env.example
 utils/user_credentials*.json
+utils/user_credentials*.txt
+/generated_users*.json
+/generated_users*.txt
+
+# Local analysis and release-review documents
+/log_analysis/
+/*.docx
 
 # Azure App Service deployment artifacts (kept locally)
 /.deployment
@@ -12,6 +21,9 @@ utils/user_credentials*.json
 
 # Runtime data (may contain participant identifiers)
 logs/
+conversation_logs/
+*.jsonl
+*.db
 last_message_sent.json
 tmp_*.png
 tmp_*.txt
@@ -22,6 +34,9 @@ __pycache__/
 *.py[cod]
 .venv/
 venv/
+build/
+dist/
+*.egg-info/
 .ipynb_checkpoints/
 
 # OS / editor

@@ -2,12 +2,16 @@
 
 Standalone Flask application for collecting human ratings of AI Worker behavior in Common Ground puzzle dialogues.
 
-The folder is intentionally runtime-only. It contains the web application and manifests for the frozen A-E study conditions; the required data assets are supplied locally. Historical results, analysis code, source corpora, stimulus builders, and old environments are not included.
+The folder is intentionally runtime-only. It contains the web application for
+the A-E study conditions; all original-study manifests and data assets are
+supplied locally. Historical results, analysis code, source corpora, stimulus
+builders, and old environments are not included in the source tree.
 
-> **Required local assets:** Frozen JSON snapshots and rendered board images
-> are not included in Git checkouts. Keep your existing `stimuli\snapshots\`
-> and `stimuli\boards\` directories, or restore matching assets before starting
-> the app or running the installation check.
+> **Required local study files:** The snapshot matrix, practice manifest, frozen
+> JSON snapshots, and rendered board images are excluded from Git checkouts and
+> Python distribution packages. Keep your existing `stimuli\` directory, or
+> restore matching, authorized study files before starting the app or running
+> the installation check.
 > See [Frozen Stimuli](#frozen-stimuli).
 
 ## Quick Start
@@ -56,7 +60,8 @@ Each condition supports both rating types:
 - `CB`: rating before the current Worker response
 - `CA`: rating after the current Worker response
 
-The frozen matrix contains 478 rows per condition and 2,390 rows total.
+The original study matrix contains 478 rows per condition and 2,390 rows total;
+it is not distributed with this source release.
 
 ## Validate the Installation
 
@@ -119,6 +124,8 @@ data\roster_snapshots\ roster backups created before changes
 ```
 
 They are empty in the cleaned distribution. Treat future contents and `participant_roster.csv` as sensitive study data.
+The entire `data\` directory is ignored, including processed results and legacy
+roster backups. Never add these records to a source release.
 
 Event and grading log identifiers must be non-empty and contain only ASCII
 letters, digits, hyphens, or underscores. Invalid identifiers raise an error
@@ -129,26 +136,32 @@ The application uses local append-only files and should run as a single applicat
 
 ## Frozen Stimuli
 
-Only the frozen study manifests are tracked in Git:
+All files below are required local inputs, not versioned release assets:
 
 ```text
 stimuli\snapshot_matrix.csv
 stimuli\practice_manifest.json
-```
-
-The following asset directories are ignored by Git:
-
-```text
 stimuli\snapshots\      frozen dialogue and board-state JSON
 stimuli\boards\         rendered PNG images
 ```
 
-On a fresh checkout or deployment, restore both directories with assets matching
-the manifests. `doctor` validates the snapshot JSON and referenced images, and
-will report missing assets until they are present. Removing the directories
-from Git tracking does not delete existing local files.
+On a fresh checkout or deployment, restore the manifests and both asset
+directories from an authorized source. The matrix contains study-session
+identifiers and per-turn measurements, so it must be handled as study data rather
+than generic configuration. `doctor` validates the manifests, snapshots, and
+referenced images and reports missing inputs until they are present.
+
+Removing these paths from Git tracking preserves local files but does not erase
+older commits. Review historical copies separately before redistributing the
+repository. Package builds exclude `stimuli\` and `data\` even when those
+directories are populated locally.
 
 The original source corpora and rebuild pipeline were deliberately removed. Restore them from their source repository if the frozen stimuli must be regenerated.
+
+The consent and debrief templates retain the original study's contacts,
+eligibility criteria, and privacy statements. They require review and adaptation
+to your own approved study; publishing the code does not approve those terms for
+new participants.
 
 ## Local Configuration
 
@@ -215,7 +228,7 @@ uncertainty_grading\
   run.ps1, run.cmd        local or production launchers
   doctor.ps1              installation validation
   data\                    live roster and future outputs only
-  stimuli\                versioned A-E manifests
+  stimuli\                local-only A-E manifests and study assets
     snapshots\            required local JSON snapshots, excluded from Git
     boards\               required local image assets, excluded from Git
   templates\, static\     user interface
