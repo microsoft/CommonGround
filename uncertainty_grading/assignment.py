@@ -1,11 +1,12 @@
 """Participant assignment for Study 4.
 
-Assignment is **deliberate and roster-driven**: ``data/participant_roster.csv``
+Study-mode assignment is **deliberate and roster-driven**: ``data/participant_roster.csv``
 is the single source of truth. Each row maps a participant's **credential** to a
 fixed condition (A/B/C/D/E), rating type (``arm`` CB/CA), session (``dialogue_id``)
 and view. ``row_for_credentials`` reads that row directly; the per-session
 rating points (W1..Wn = ``trials``) come from the built
 ``stimuli/snapshot_matrix.csv``.
+Local mode selects a condition, rating type, and dialogue without using a roster.
 """
 from __future__ import annotations
 
@@ -31,7 +32,9 @@ def _sessions_from_matrix() -> List[str]:
     return seen
 
 
-def _snapshot_types_by_session() -> Dict[str, List[str]]:
+def _snapshot_types_by_session(
+    condition: str | None = None, arm: str | None = None,
+) -> Dict[str, List[str]]:
     """``dialogue_id -> ordered [W1 .. Wn]`` rating points, from the matrix.
 
     The number of rateable Worker turns varies per session (the whole
@@ -43,6 +46,10 @@ def _snapshot_types_by_session() -> Dict[str, List[str]]:
         return {}
     with S.SNAPSHOT_MATRIX_CSV.open(encoding="utf-8") as f:
         for rec in csv.DictReader(f):
+            if condition is not None and rec.get("condition") != condition:
+                continue
+            if arm is not None and rec.get("arm") != arm:
+                continue
             d = rec["dialogue_id"]
             st = rec["snapshot_type"]
             idx = int(rec.get("rating_point_index", 0))
@@ -67,7 +74,7 @@ def _view_by_session() -> Dict[str, str]:
 # --------------------------------------------------------------------------- #
 def _trials_for(condition: str, arm: str, dialogue_id: str) -> List[Dict]:
     """Every rating point (W1 .. Wn) of a session in one cell, in order."""
-    snapshot_types = _snapshot_types_by_session().get(dialogue_id, [])
+    snapshot_types = _snapshot_types_by_session(condition, arm).get(dialogue_id, [])
     return [{
         "trial_index": i,
         "dialogue_id": dialogue_id,
@@ -75,6 +82,49 @@ def _trials_for(condition: str, arm: str, dialogue_id: str) -> List[Dict]:
         "snapshot_type": snapshot_type,
         "arm": arm,
     } for i, snapshot_type in enumerate(snapshot_types)]
+
+
+def local_assignment(
+    condition: str = "A", arm: str = "CA",
+    dialogue_id: str | None = None, view: str = "source",
+) -> Dict:
+    """Choose one local dialogue without reading or modifying a participant roster."""
+    if condition not in S.CONDITIONS or arm not in S.ARMS:
+        raise ValueError(f"Unknown grading condition or arm: {condition}/{arm}")
+    if view not in ("source", "shared", "nonshared"):
+        raise ValueError(f"Unknown local view: {view}")
+    available = _snapshot_types_by_session(condition, arm)
+    if not available:
+        raise ValueError(
+            f"No {condition}/{arm} rating points found in {S.SNAPSHOT_MATRIX_CSV}. "
+            "Restore matching local stimulus files before starting."
+        )
+    dialogue_id = dialogue_id if dialogue_id is not None else next(iter(available))
+    if dialogue_id not in available:
+        raise ValueError(f"Dialogue {dialogue_id!r} has no {condition}/{arm} rating points.")
+    source_view = _view_by_session()[dialogue_id]
+    presented_view = source_view if view == "source" else view
+    if presented_view not in ("shared", "nonshared"):
+        raise ValueError(
+            f"Dialogue {dialogue_id!r} has no valid source view; use --view shared or nonshared."
+        )
+    trials = _trials_for(condition, arm, dialogue_id)
+    for trial in trials:
+        snapshot = S.SNAPSHOTS_DIR / (
+            f"{dialogue_id}_{condition}_{trial['snapshot_type']}_{arm}.json"
+        )
+        if not snapshot.is_file():
+            raise ValueError(f"Missing local snapshot: {snapshot}. Restore matching stimulus files.")
+    return {
+        "row_index": None,
+        "condition": condition,
+        "arm": arm,
+        "dialogue_id": dialogue_id,
+        "dialogues": [dialogue_id],
+        "view": presented_view,
+        "source_view": source_view,
+        "trials": trials,
+    }
 
 
 # --------------------------------------------------------------------------- #

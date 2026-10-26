@@ -11,6 +11,9 @@ utils/user_credentials*.txt
 /log_analysis/
 /*.docx
 
+# Local regression tests
+/tests/
+
 # Azure App Service deployment artifacts (kept locally)
 /.deployment
 /.vscodeignore

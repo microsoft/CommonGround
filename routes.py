@@ -82,16 +82,16 @@ def index():
     AUTO_START_MODE = current_app.config.get('AUTO_START_MODE')
     SHARED_VIEW_ENABLED = current_app.config.get('SHARED_VIEW_ENABLED', True)
 
-    # If study mode is enabled, check consent and authentication
+    # If study mode is enabled, check authentication.
     if RUN_STUDY_MODE:
         # Store URL parameters in session if provided
         if request.args.get('PROLIFIC_PID'):
             session['url_prolific_pid'] = request.args.get('PROLIFIC_PID')
         if request.args.get('STUDY_ID'):
             session['url_study_id'] = request.args.get('STUDY_ID')
+        if request.args.get('SESSION_ID'):
+            session['url_session_id'] = request.args.get('SESSION_ID')
         
-        if not session.get('consent_given', False):
-            return redirect(url_for('puzzle.consent'))
         if not session.get('authenticated', False):
             return redirect(url_for('puzzle.login'))
     
@@ -182,20 +182,6 @@ def login():
     if not AUTH_AVAILABLE:
         return render_template('error.html', error="Authentication system not available"), 500
     
-    # Check if consent given first
-    if not session.get('consent_given', False):
-        if request.args.get('PROLIFIC_PID'):
-            session['url_prolific_pid'] = request.args.get('PROLIFIC_PID')
-        if request.args.get('STUDY_ID'):
-            session['url_study_id'] = request.args.get('STUDY_ID')
-        if request.args.get('SESSION_ID'):
-            session['url_session_id'] = request.args.get('SESSION_ID')
-        session.modified = True
-        return redirect(url_for('puzzle.consent', 
-                               PROLIFIC_PID=request.args.get('PROLIFIC_PID'),
-                               STUDY_ID=request.args.get('STUDY_ID'),
-                               SESSION_ID=request.args.get('SESSION_ID')))
-    
     # If already authenticated, redirect to index
     if session.get('authenticated', False):
         return redirect(url_for('puzzle.index'))
@@ -280,79 +266,6 @@ def login():
                          prefill_session_id=custom_session_id)
 
 
-@puzzle_routes.route('/consent')
-def consent():
-    """Display consent form."""
-    from flask import current_app
-    RUN_STUDY_MODE = current_app.config.get('RUN_STUDY_MODE', False)
-
-    if not RUN_STUDY_MODE:
-        return redirect(url_for('puzzle.index'))
-    
-    if request.args.get('PROLIFIC_PID'):
-        session['url_prolific_pid'] = request.args.get('PROLIFIC_PID')
-    if request.args.get('STUDY_ID'):
-        session['url_study_id'] = request.args.get('STUDY_ID')
-    if request.args.get('SESSION_ID'):
-        session['url_session_id'] = request.args.get('SESSION_ID')
-    session.modified = True
-    
-    if session.get('consent_given', False):
-        if not session.get('authenticated', False):
-            return redirect(url_for('puzzle.login',
-                                   PROLIFIC_PID=request.args.get('PROLIFIC_PID'),
-                                   STUDY_ID=request.args.get('STUDY_ID'),
-                                   SESSION_ID=request.args.get('SESSION_ID')))
-        return redirect(url_for('puzzle.index'))
-    
-    return render_template('consent.html')
-
-
-@puzzle_routes.route('/consent/accept', methods=['POST'])
-def consent_accept():
-    """Handle consent acceptance."""
-    from flask import current_app
-    RUN_STUDY_MODE = current_app.config.get('RUN_STUDY_MODE', False)
-
-    session.permanent = True
-    session['consent_given'] = True
-    
-    if LOGGING_AVAILABLE:
-        session_id = get_user_session_id()
-        if session_id:
-            user_logger = get_user_session_logger()
-            user_logger.log_action(
-                session_id=session_id,
-                action_type='system_event',
-                event_name='consent_accepted',
-                details={'timestamp': datetime.now().isoformat()},
-                metadata={}
-            )
-    
-    if RUN_STUDY_MODE and not session.get('authenticated', False):
-        return redirect(url_for('puzzle.login'))
-    
-    return redirect(url_for('puzzle.index'))
-
-
-@puzzle_routes.route('/consent/decline', methods=['POST'])
-def consent_decline():
-    """Handle consent decline."""
-    if LOGGING_AVAILABLE:
-        session_id = get_user_session_id()
-        if session_id:
-            user_logger = get_user_session_logger()
-            user_logger.log_action(
-                session_id=session_id,
-                action_type='system_event',
-                event_name='consent_declined',
-                details={'timestamp': datetime.now().isoformat()},
-                metadata={}
-            )
-    
-    return render_template('consent_declined.html')
-
-
 @puzzle_routes.route('/logout')
 def logout():
     """Log out the current user."""
@@ -372,7 +285,7 @@ def logout():
         )
     
     session.clear()
-    return redirect(url_for('puzzle.consent'))
+    return redirect(url_for('puzzle.index'))
 
 
 @puzzle_routes.route('/reset')
@@ -388,11 +301,8 @@ def worker():
     from flask import current_app
     RUN_STUDY_MODE = current_app.config.get('RUN_STUDY_MODE', False)
 
-    if RUN_STUDY_MODE:
-        if not session.get('consent_given', False):
-            return redirect(url_for('puzzle.consent'))
-        if not session.get('authenticated', False):
-            return redirect(url_for('puzzle.login'))
+    if RUN_STUDY_MODE and not session.get('authenticated', False):
+        return redirect(url_for('puzzle.login'))
     
     # Explicit shared room id enables human-human pairing across browsers (?session=<id>)
     shared_session = request.args.get('session')
@@ -417,8 +327,7 @@ def worker():
         request.args.get('auto_helper'),
     )
     shared_view = request.args.get('shared_view', 'true')
-    questionnaire_url = os.environ.get('FORMS_QUESTIONNAIRE_URL', '')
-    return render_template('worker.html', auto_worker=auto_worker, auto_helper=auto_helper, shared_view=shared_view, questionnaire_url=questionnaire_url)
+    return render_template('worker.html', auto_worker=auto_worker, auto_helper=auto_helper, shared_view=shared_view)
 
 
 @puzzle_routes.route('/helper')
@@ -427,11 +336,8 @@ def helper():
     from flask import current_app
     RUN_STUDY_MODE = current_app.config.get('RUN_STUDY_MODE', False)
 
-    if RUN_STUDY_MODE:
-        if not session.get('consent_given', False):
-            return redirect(url_for('puzzle.consent'))
-        if not session.get('authenticated', False):
-            return redirect(url_for('puzzle.login'))
+    if RUN_STUDY_MODE and not session.get('authenticated', False):
+        return redirect(url_for('puzzle.login'))
     
     # Explicit shared room id enables human-human pairing across browsers (?session=<id>)
     shared_session = request.args.get('session')
@@ -453,8 +359,7 @@ def helper():
         request.args.get('auto_helper'),
     )
     shared_view = request.args.get('shared_view', 'true')
-    questionnaire_url = os.environ.get('FORMS_QUESTIONNAIRE_URL', '')
-    return render_template('helper.html', auto_worker=auto_worker, auto_helper=auto_helper, shared_view=shared_view, questionnaire_url=questionnaire_url)
+    return render_template('helper.html', auto_worker=auto_worker, auto_helper=auto_helper, shared_view=shared_view)
 
 
 @puzzle_routes.route('/admin/download_logs')
