@@ -11,14 +11,14 @@ session(s) you choose. ``participant_id`` is a 6-digit hash of the credential.
 Run from the standalone folder:
 
     # 3 participants in cell A / CA on two specific sessions
-    uncertainty-grading credentials --condition A --arm CA \
+    python run.py credentials --condition A --arm CA \
         --dialogues 16c68e60,f488e002 --n 3
 
     # one participant per built non-shared session, cell C / CB
-    uncertainty-grading credentials --condition C --arm CB --dialogues nonshared
+    python run.py credentials --condition C --arm CB --dialogues nonshared
 
     # full 2x2 cell grid, one participant per built session, PREVIEW only
-    uncertainty-grading credentials --condition A,C --arm CB,CA \
+    python run.py credentials --condition A,C --arm CB,CA \
         --dialogues all --dry-run
 
 ``--condition`` / ``--arm`` / ``--dialogues`` accept comma lists; ``--dialogues``
@@ -139,14 +139,17 @@ def main(argv: List[str] | None = None) -> int:
 
     conditions = [c.strip().upper() for c in args.condition.split(",") if c.strip()]
     arms = [a.strip().upper() for a in args.arm.split(",") if a.strip()]
-    if [c for c in conditions if c not in CONDITIONS]:
+    if not conditions or [c for c in conditions if c not in CONDITIONS]:
         ap.error(f"invalid --condition {conditions}; allowed: {sorted(CONDITIONS)}")
-    if [a for a in arms if a not in ARMS]:
+    if not arms or [a for a in arms if a not in ARMS]:
         ap.error(f"invalid --arm {arms}; allowed: CB, CA")
+    if args.n < 1:
+        ap.error("--n must be at least 1.")
 
     views = _view_by_session()
     if not views:
-        ap.error("no built sessions found; run `build_stimuli.ps1` first.")
+        ap.error(f"no dialogues found in {S.SNAPSHOT_MATRIX_CSV}; "
+                 "restore the local snapshot matrix and matching stimulus files first.")
     dialogues = _resolve_dialogues(args.dialogues, views)
     unknown = [d for d in dialogues if d not in views]
     if unknown:

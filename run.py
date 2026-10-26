@@ -22,7 +22,7 @@ def _add_web_opts(p):
     p.add_argument('--port', type=int, default=None, help='Port (default 5000)')
     p.add_argument('--no-shared-view', action='store_true',
                    help='Helper cannot see the worker board in real time')
-    p.add_argument('--study', action='store_true', help='Study mode (consent form + login)')
+    p.add_argument('--study', action='store_true', help='Study mode (requires login)')
 
 
 def main():

@@ -1,7 +1,7 @@
 """Standalone uncertainty grading study application.
 
-Participants rate frozen snapshots of human-AI puzzle dialogues on 0-100
-confidence sliders under a roster-assigned experimental condition.
+Rate frozen snapshots of human-AI puzzle dialogues locally, or use an
+optional participant roster for study assignments.
 """
 
 __version__ = "1.0.0"

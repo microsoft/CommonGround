@@ -13,15 +13,12 @@
   .task-doc .button-container { display: flex; justify-content: center; margin-top: 26px; }
   .task-doc button { padding: 15px 40px; font-size: 16px; font-weight: bold; border: none; border-radius: 6px; cursor: pointer; background-color: #0078d4; color: white; transition: all 0.2s; }
   .task-doc button:hover { background-color: #106ebe; transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
-  .task-doc .pledge { display: flex; gap: 10px; align-items: flex-start; background: #eef7ee; border: 1px solid #cfe6cf; padding: 14px 16px; border-radius: 6px; margin: 18px 0; cursor: pointer; }
-  .task-doc .pledge input { margin-top: 3px; flex: none; }
-  .task-doc .pledge span { color: #2f5d2f; }
 </style>
 
 <div class="task-doc">
   <h1>The rating task</h1>
 
-  <p>In this part of the study you will read short excerpts of conversations
+  <p>In this task you will read short excerpts of conversations
     between a person (the <strong>Helper</strong>) and an AI (the
     <strong>Worker</strong>) as they work together on a puzzle. You are an
     <strong>observer</strong>: you will not play the puzzle or talk to the AI.
@@ -99,20 +96,13 @@
       Choose an option for every item — there is no default, so you must make a
       choice.</li>
   </ul>
-  <p>The whole rating task takes about 25 minutes. Please read each excerpt
-    carefully; occasional attention checks are included.</p>
+  <p>Please read each excerpt carefully; occasional attention checks are included.</p>
 
   <div class="note">
-    <p>Before you start, please confirm the pledge below, then click
-      <strong>Start practice</strong>.</p>
+    <p>Click <strong>Start practice</strong> to begin.</p>
   </div>
 
   <form method="post" action="{{ url_for('study4.flow') }}">
-    <label class="pledge">
-      <input type="checkbox" name="pledge" required>
-      <span>I pledge to read each excerpt carefully and give my honest,
-        considered judgement. It is completely fine to be unsure.</span>
-    </label>
     <div class="button-container">
       <button type="submit">Start practice</button>
     </div>
