@@ -37,7 +37,10 @@ class Settings:
         self.DB_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), "conversations.db")
         
         # Chat Configuration
-        self.MAX_TOKENS_DEFAULT = 1500
+        # Upper limit on each reply. If MAX_TOKENS is not set, the client uses 1500 for classic
+        # models and a larger budget for reasoning models, which spend tokens on hidden reasoning.
+        self.MAX_TOKENS_SET = bool(os.environ.get("MAX_TOKENS", "").strip())
+        self.MAX_TOKENS_DEFAULT = int(os.environ.get("MAX_TOKENS") or "1500")
         self.MAX_CONVERSATION_TURNS = 20
         
         # Logging Configuration

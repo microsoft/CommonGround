@@ -8,7 +8,7 @@ import threading
 from typing import List, Dict, Any, Optional
 
 from azure.identity import DefaultAzureCredential, get_bearer_token_provider
-from openai import AsyncAzureOpenAI, AsyncOpenAI
+from openai import AsyncAzureOpenAI, AsyncOpenAI, BadRequestError
 from .async_executor import get_async_executor
 
 try:
@@ -23,12 +23,42 @@ except ImportError:
 
 logger = logging.getLogger(__name__)
 
+# Reply budget for reasoning models when MAX_TOKENS is not set. They spend part of the
+# budget on hidden reasoning before any visible text, so the classic 1500 can run out first.
+REASONING_MAX_TOKENS = 16000
+
 
 class AIClient:
     """Manages Azure OpenAI client and chat completions."""
     
     def __init__(self):
+        self.deployment = settings.OPENAI_GPT4_DEPLOYMENT
         self.client = self._initialize_client()
+        # Newer reasoning models reject 'max_tokens' and any non-default temperature.
+        # Requests start with the classic parameters and switch once if the model refuses them.
+        self.token_parameter = 'max_tokens'
+        self.send_temperature = True
+        self.last_budget: Optional[int] = None
+
+    @property
+    def is_reasoning_model(self) -> bool:
+        return self.token_parameter == 'max_completion_tokens'
+
+    def reply_budget(self, requested: Optional[int]) -> int:
+        """The token limit to send: MAX_TOKENS if set, otherwise sized for the kind of model."""
+        budget = requested or settings.MAX_TOKENS_DEFAULT
+        if self.is_reasoning_model and not getattr(settings, 'MAX_TOKENS_SET', False):
+            budget = max(budget, REASONING_MAX_TOKENS)
+        return budget
+
+    def describe_settings(self) -> Dict[str, Any]:
+        """How requests are actually sent, for the run logs."""
+        return {
+            'token_parameter': self.token_parameter,
+            'max_tokens': self.last_budget or self.reply_budget(None),
+            'temperature': 0.0 if self.send_temperature else 'model default',
+            'reasoning_model': self.is_reasoning_model,
+        }
     
     def _initialize_client(self):
         """Initialize the OpenAI client.
@@ -80,6 +110,23 @@ class AIClient:
             logger.error(f"Failed to initialize OpenAI client: {e}")
             raise
     
+    def _adapt_to_rejected_parameter(self, error: BadRequestError) -> bool:
+        """Switch to what the model accepts after a 400 about a parameter; True to retry."""
+        body = error.body if isinstance(error.body, dict) else {}
+        body = body.get('error', body) if isinstance(body.get('error'), dict) else body
+        param = body.get('param')
+        if param == 'max_tokens' and self.token_parameter == 'max_tokens':
+            self.token_parameter = 'max_completion_tokens'
+            logger.warning("Model %s does not accept 'max_tokens'; using 'max_completion_tokens' from now on",
+                           self.deployment)
+            return True
+        if param == 'temperature' and self.send_temperature:
+            self.send_temperature = False
+            logger.warning("Model %s only supports its default temperature; temperature is no longer sent, "
+                           "so its replies are not deterministic", self.deployment)
+            return True
+        return False
+
     async def get_chat_completion(
         self, 
         messages: List[Dict[str, str]], 
@@ -87,23 +134,37 @@ class AIClient:
         temperature: float = 0.0
     ) -> str:
         """Get chat completion from Azure OpenAI."""
-        max_tokens = max_tokens or settings.MAX_TOKENS_DEFAULT
-        
-        try:
-            response = await self.client.chat.completions.create(
-                model=settings.OPENAI_GPT4_DEPLOYMENT,
-                messages=messages,
-                max_tokens=max_tokens,
-                temperature=temperature
-            )
-            
-            content = response.choices[0].message.content
+        while True:
+            budget = self.reply_budget(max_tokens)
+            request = {
+                'model': self.deployment,
+                'messages': messages,
+                self.token_parameter: budget,
+            }
+            if self.send_temperature:
+                request['temperature'] = temperature
+            try:
+                response = await self.client.chat.completions.create(**request)
+            except BadRequestError as e:
+                if self._adapt_to_rejected_parameter(e):
+                    continue
+                logger.error(f"Error in chat completion: {e}")
+                raise
+            except Exception as e:
+                logger.error(f"Error in chat completion: {e}")
+                raise
+            self.last_budget = budget
+
+            choice = response.choices[0]
+            content = choice.message.content
+            if not content:
+                # Reasoning models spend part of the token budget on hidden reasoning,
+                # so a tight budget can end before any visible reply is written.
+                raise RuntimeError(
+                    f"The model returned no text (finish_reason={choice.finish_reason}). "
+                    f"If it is 'length', the {budget}-token budget ran out; set a higher MAX_TOKENS in .env.")
             logger.info(f"Successfully generated completion with {len(content)} characters")
             return content
-            
-        except Exception as e:
-            logger.error(f"Error in chat completion: {e}")
-            raise
     
     def get_chat_completion_sync(
         self, 

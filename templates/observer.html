@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Study Observer - Visual Information Studies</title>
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+    <style>
+        * { box-sizing: border-box; }
+        body { margin: 0; font-family: Segoe UI, Arial, sans-serif; background: #f2f4f7; color: #222; }
+        header { background: #1f2d3d; color: #fff; padding: 12px 20px; display: flex; align-items: center; gap: 16px; }
+        header h1 { font-size: 18px; margin: 0; flex: 1; }
+        .pill { padding: 3px 12px; border-radius: 12px; font-size: 13px; background: #6b7785; }
+        .pill.running { background: #2e9d57; } .pill.paused { background: #d98e04; }
+        .pill.finished { background: #3367d6; } .pill.error { background: #c0392b; }
+        main { padding: 14px 20px; display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; }
+        section { background: #fff; border-radius: 8px; padding: 12px 14px; box-shadow: 0 1px 3px rgba(0,0,0,.12); }
+        h2 { font-size: 14px; margin: 0 0 8px; text-transform: uppercase; letter-spacing: .04em; color: #4a5766; }
+        .controls { display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end; }
+        .controls label { display: flex; flex-direction: column; font-size: 12px; color: #4a5766; gap: 2px; }
+        .controls input, .controls select { padding: 5px 7px; font-size: 14px; min-width: 110px; }
+        .controls label.inline { flex-direction: row; align-items: center; gap: 6px; }
+        .controls label.inline input { min-width: 0; }
+        .pieceSets { border: 1px solid #c8d0da; border-radius: 5px; padding: 2px 8px 5px; display: flex; gap: 10px; }
+        .pieceSets legend { font-size: 12px; color: #4a5766; padding: 0 3px; }
+        button { padding: 7px 16px; font-size: 14px; border: 0; border-radius: 5px; cursor: pointer; background: #3367d6; color: #fff; }
+        button.secondary { background: #6b7785; } button.danger { background: #c0392b; }
+        button:disabled { opacity: .45; cursor: default; }
+        .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+        .chip { background: #e8edf5; padding: 2px 10px; border-radius: 10px; font-size: 13px; }
+        .columns { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+        @media (max-width: 1100px) { .columns { grid-template-columns: 1fr; } }
+        .pair { display: flex; flex-wrap: wrap; gap: 10px; }
+        figure { margin: 0; max-width: 100%; }
+        figure img { max-width: 100%; max-height: 300px; border: 1px solid #c8d0da; background: #eee; display: block; }
+        figcaption { font-size: 12px; color: #4a5766; margin-bottom: 3px; max-width: 320px; }
+        .notes { font-size: 13px; color: #8a4b00; margin-top: 6px; white-space: pre-wrap; }
+        .response { font-size: 13px; background: #f7f8fa; border-left: 3px solid #3367d6; padding: 6px 8px; margin-top: 8px;
+                    white-space: pre-wrap; max-height: 150px; overflow: auto; }
+        .bottom { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 14px; }
+        section { overflow-x: auto; }
+        @media (max-width: 1100px) { .bottom { grid-template-columns: 1fr; } }
+        .log { height: 260px; overflow: auto; font-size: 13px; }
+        .msg { padding: 5px 8px; margin: 3px 0; border-radius: 6px; }
+        .msg.helper { background: #e5f0ff; } .msg.worker { background: #e8f6ea; }
+        .msg b { font-size: 11px; text-transform: uppercase; color: #4a5766; }
+        .act { font-family: Consolas, monospace; font-size: 12px; padding: 1px 0; }
+        .act.bad { color: #c0392b; }
+        table { border-collapse: collapse; width: 100%; font-size: 13px; }
+        th, td { border-bottom: 1px solid #e1e5ea; padding: 4px 8px; text-align: left; }
+        .solved { color: #2e9d57; font-weight: 600; } .unsolved { color: #c0392b; font-weight: 600; }
+        #error { display: none; background: #fdecea; color: #a02a1f; padding: 8px 12px; border-radius: 6px; }
+        .hint { font-size: 12px; color: #6b7785; }
+    </style>
+</head>
+<body>
+<header>
+    <h1>Study Observer: visual information for grounding and awareness (AI-AI)</h1>
+    <span id="status" class="pill">connecting</span>
+</header>
+<main>
+    <div id="error"></div>
+    <section>
+        <h2>Run</h2>
+        <div class="controls">
+            <label>Study
+                <select id="experiment">
+                    <option value="rotation">Rotation study (Experiment 2)</option>
+                    <option value="field_of_view">Field of view study (Experiment 3)</option>
+                </select>
+            </label>
+            <label id="complexityBox">Pieces (between pairs)
+                <select id="complexity">
+                    {% for c in options.complexities %}<option value="{{ c }}">{{ options.complexity_labels[c] }}</option>{% endfor %}
+                </select>
+            </label>
+            <fieldset id="complexitiesBox" class="pieceSets" style="display:none">
+                <legend>Pieces (within pair)</legend>
+                {% for c in options.complexities %}<label class="inline"><input type="checkbox" class="pieceSet" value="{{ c }}"{% if c in options.default_fov_complexities %} checked{% endif %}> {{ options.complexity_labels[c] }}</label>{% endfor %}
+            </fieldset>
+            <label id="controlBox" style="display:none">Window control (between pairs)
+                <select id="fov_control">
+                    {% for c in options.fov_controls %}<option value="{{ c }}">{{ c }}</option>{% endfor %}
+                </select>
+            </label>
+            <label id="fovAlignmentBox" style="display:none">Helper's view (between pairs)
+                <select id="fov_alignment">
+                    {% for a in options.fov_alignments %}<option value="{{ a }}">{{ a }}</option>{% endfor %}
+                </select>
+            </label>
+            <label>Seed <input id="seed" type="number" min="0" value="0"></label>
+            <label>Trials per block <input id="trials_per_block" type="number" min="1" max="20" placeholder="paper default"></label>
+            <label>Trial limit <input id="trial_limit" type="number" min="1" placeholder="all trials"></label>
+            <label>Max turns <input id="max_turns" type="number" min="1" max="50" value="20"></label>
+            <label class="inline"><input id="disclose" type="checkbox" checked> Tell agents whether views are rotated</label>
+            <label>Helper
+                <select id="helper">
+                    <option value="ai">AI</option>
+                    <option value="human">Human (at /study/helper)</option>
+                </select>
+            </label>
+            <button id="start">Start</button>
+            <button id="pause" class="secondary" disabled>Pause</button>
+            <button id="resume" class="secondary" disabled>Resume</button>
+            <button id="stop" class="danger" disabled>Stop</button>
+        </div>
+        <p class="hint">Default trials per block follow the paper (rotation 6, field of view 4). Every model turn costs API calls, so use a trial limit for a first run.</p>
+        <p class="hint" id="humanHint" style="display:none">The human Helper plays at <a id="humanLink" href="/study/helper" target="_blank">/study/helper</a>; open it before you press Start. That page shows only what an AI Helper would receive.</p>
+        <div id="progress" class="chips"></div>
+    </section>
+
+    <div class="columns">
+        <section>
+            <h2>Observer only: ground truth</h2>
+            <div class="pair">
+                <figure><figcaption>Target</figcaption><img id="truthTarget" alt="Target pattern"></figure>
+                <figure><figcaption>Worker's actual board</figcaption><img id="truthBoard" alt="Worker board"></figure>
+            </div>
+            <div id="truthInfo" class="notes"></div>
+        </section>
+        <section>
+            <h2>Worker receives</h2>
+            <div id="workerImages" class="pair"></div>
+            <div id="workerNotes" class="notes"></div>
+            <div id="workerResponse" class="response" style="display:none"></div>
+        </section>
+        <section>
+            <h2>Helper receives</h2>
+            <div id="helperImages" class="pair"></div>
+            <div id="helperNotes" class="notes"></div>
+            <div id="helperResponse" class="response" style="display:none"></div>
+        </section>
+    </div>
+
+    <div class="bottom">
+        <section><h2>Dialogue</h2><div id="chat" class="log"></div></section>
+        <section><h2>Actions and events</h2><div id="actions" class="log"></div></section>
+    </div>
+
+    <section>
+        <h2>Completed trials</h2>
+        <table>
+            <thead><tr><th>#</th><th>Block</th><th>Pieces</th><th>Condition</th><th>Result</th><th>Turns</th>
+                <th>Cost (turns + looks)</th><th>Time (s)</th>
+                <th>Model (s)</th><th>Messages H/W</th><th>Snapshots</th><th>Window moves</th><th>False DONE</th></tr></thead>
+            <tbody id="results"></tbody>
+        </table>
+    </section>
+</main>
+
+<script>
+    const $ = (id) => document.getElementById(id);
+    const PIECE_LABELS = {{ options.complexity_labels | tojson }};
+    const pieceLabel = (complexity) => PIECE_LABELS[complexity] || complexity;
+    const socket = io({ reconnection: true });
+    let completedCount = 0;
+
+    function setStatus(status) {
+        const pill = $('status');
+        pill.textContent = status;
+        pill.className = 'pill ' + status;
+        const active = status === 'running' || status === 'paused';
+        $('start').disabled = active;
+        $('pause').disabled = status !== 'running';
+        $('resume').disabled = status !== 'paused';
+        $('stop').disabled = !active;
+    }
+
+    function showError(text) {
+        const box = $('error');
+        box.textContent = text;
+        box.style.display = text ? 'block' : 'none';
+    }
+
+    function figure(label, b64) {
+        const fig = document.createElement('figure');
+        const cap = document.createElement('figcaption');
+        cap.textContent = label;
+        const img = document.createElement('img');
+        img.src = 'data:image/png;base64,' + b64;
+        img.alt = label;
+        fig.append(cap, img);
+        return fig;
+    }
+
+    function describeCondition(trial) {
+        const chips = [pieceLabel(trial.complexity) + ' pieces'];
+        if (trial.experiment === 'rotation') {
+            chips.push(trial.feedback === 'snapshot' ? 'snapshot feedback' : 'immediate feedback');
+            chips.push(trial.alignment === 'rotated'
+                ? `rotated (flip ${trial.transform ? trial.transform.flip : trial.transform_flip}, `
+                    + `${trial.transform ? trial.transform.degrees : trial.transform_degrees}\u00b0)` : 'aligned views');
+        } else {
+            chips.push('view: ' + trial.fov_size);
+            if (trial.fov_control !== 'n/a') chips.push('window control: ' + trial.fov_control);
+            if (trial.alignment === 'rotated') chips.push('rotated view');
+        }
+        return chips;
+    }
+
+    function setProgress(trial, index, total) {
+        const box = $('progress');
+        box.replaceChildren();
+        const items = [`Trial ${index}/${total}`, `block ${trial.block}`, `trial ${trial.trial}`, ...describeCondition(trial)];
+        for (const text of items) {
+            const chip = document.createElement('span');
+            chip.className = 'chip';
+            chip.textContent = text;
+            box.append(chip);
+        }
+    }
+
+    function logLine(parent, text, cls) {
+        const line = document.createElement('div');
+        line.className = 'act' + (cls ? ' ' + cls : '');
+        line.textContent = text;
+        parent.append(line);
+        parent.scrollTop = parent.scrollHeight;
+    }
+
+    function addChat(sender, turn, text) {
+        const box = $('chat');
+        const row = document.createElement('div');
+        row.className = 'msg ' + sender;
+        const who = document.createElement('b');
+        who.textContent = `${sender} (turn ${turn})`;
+        const body = document.createElement('div');
+        body.textContent = text;
+        row.append(who, body);
+        box.append(row);
+        box.scrollTop = box.scrollHeight;
+    }
+
+    function formatAction(action) {
+        const pos = (p) => `(${p[0]}, ${p[1]})`;
+        switch (action.action) {
+            case 'place': return `place piece #${action.piece} at ${pos(action.position)}`;
+            case 'move': return `move ${pos(action.from)} to ${pos(action.to)}`;
+            case 'remove': return `remove ${pos(action.position)}`;
+            case 'point': return `point at ${pos(action.position)}`;
+            case 'window': return `show window at ${pos(action.position)}`;
+            case 'look': return `look at ${pos(action.position)}`;
+            case 'done': return 'declare the puzzle finished (DONE)';
+            default: return action.action;
+        }
+    }
+
+    function updateTruth(truth) {
+        if (!truth) return;
+        if (truth.target) $('truthTarget').src = 'data:image/png;base64,' + truth.target;
+        if (truth.board) $('truthBoard').src = 'data:image/png;base64,' + truth.board;
+    }
+
+    function addResultRow(result) {
+        completedCount += 1;
+        const row = document.createElement('tr');
+        const condition = describeCondition(result).slice(1).join(', ');
+        const cells = [completedCount, result.block, pieceLabel(result.complexity), condition,
+            result.solved ? 'solved' : `not solved (${result.correct_target_cells}/${result.target_cells} cells)`,
+            result.turns, result.turns_plus_looks ?? result.turns, result.elapsed_s, result.llm_seconds,
+            `${result.helper_messages}/${result.worker_messages}`, result.snapshots, result.window_moves,
+            result.false_done_claims ?? ''];
+        cells.forEach((value, i) => {
+            const cell = document.createElement('td');
+            cell.textContent = value;
+            if (i === 4) cell.className = result.solved ? 'solved' : 'unsolved';
+            row.append(cell);
+        });
+        $('results').append(row);
+    }
+
+    function resetRun() {
+        completedCount = 0;
+        ['chat', 'actions', 'results', 'workerImages', 'helperImages', 'progress'].forEach((id) => $(id).replaceChildren());
+        ['workerNotes', 'helperNotes', 'truthInfo'].forEach((id) => { $(id).textContent = ''; });
+        ['workerResponse', 'helperResponse'].forEach((id) => { $(id).style.display = 'none'; });
+        showError('');
+    }
+
+    function handleEvent(event) {
+        switch (event.type) {
+            case 'run_started':
+                resetRun();
+                setStatus('running');
+                logLine($('actions'), `Run ${event.run_id}: ${event.trials.length} trials, model ${event.model}`);
+                break;
+            case 'trial_started':
+                setProgress(event.trial, event.index, event.total);
+                $('chat').replaceChildren();
+                updateTruth(event.truth);
+                $('truthInfo').textContent = 'Pieces: ' + Object.entries(event.piece_names)
+                    .map(([i, name]) => `#${i} ${name}`).join(', ');
+                logLine($('actions'), `--- Trial ${event.index}/${event.total} (${event.trial.trial_id}) ---`);
+                break;
+            case 'observation': {
+                const images = $(event.role + 'Images');
+                images.replaceChildren(...event.images.map((im) => figure(im.label, im.png_b64)));
+                $(event.role + 'Notes').textContent = event.notes.join('\n');
+                break;
+            }
+            case 'agent_response': {
+                const box = $(event.role + 'Response');
+                const parts = [event.error ? 'MODEL ERROR' : '', event.raw_text || ''].filter(Boolean);
+                box.textContent = parts.join('\n');
+                box.style.display = 'block';
+                break;
+            }
+            case 'message':
+                addChat(event.sender, event.turn, event.text);
+                break;
+            case 'action_result':
+                logLine($('actions'), `${event.role} turn ${event.turn}: ${formatAction(event.action)} - ${event.ok ? 'ok' : 'rejected: ' + event.detail}`,
+                    event.ok ? '' : 'bad');
+                break;
+            case 'state': {
+                updateTruth(event.truth);
+                const w = event.window;
+                $('truthInfo').textContent = `Turn ${event.turn}. Worker cursor (${event.cursor[0]}, ${event.cursor[1]}). `
+                    + (w ? `Helper window at (${w.x}, ${w.y}), ${w.size}x${w.size}. ` : '')
+                    + (event.snapshots_sent ? `Snapshots sent: ${event.snapshots_sent}. ` : '')
+                    + (event.solved ? 'Solved.' : '');
+                break;
+            }
+            case 'trial_finished':
+                updateTruth(event.truth);
+                addResultRow(event.result);
+                logLine($('actions'), `Trial ${event.result.solved ? 'solved' : 'not solved'} in ${event.result.turns} turns`);
+                break;
+            case 'run_paused': setStatus('paused'); break;
+            case 'run_resumed': setStatus('running'); break;
+            case 'error':
+                logLine($('actions'), `Model error (${event.role || 'run'}): ${event.message}`, 'bad');
+                break;
+            case 'run_finished':
+                setStatus('finished');
+                logLine($('actions'), `Run ${event.status}: ${event.trials_solved}/${event.trials_completed} solved`
+                    + (event.reason ? ` (${event.reason})` : ''), event.status === 'completed' ? '' : 'bad');
+                if (event.reason) showError(event.reason);
+                break;
+        }
+    }
+
+    socket.on('connect', () => socket.emit('observer_join', {}));
+    socket.on('disconnect', () => { $('status').textContent = 'disconnected'; $('status').className = 'pill error'; });
+    socket.on('study_event', handleEvent);
+    socket.on('observer_state', (data) => {
+        setStatus(data.status);
+        data.events.forEach(handleEvent);
+        setStatus(data.status);
+    });
+    socket.on('observer_error', (data) => showError(data.message));
+
+    function updateFactorInputs() {
+        const rotation = $('experiment').value === 'rotation';
+        $('complexityBox').style.display = rotation ? '' : 'none';
+        $('complexitiesBox').style.display = rotation ? 'none' : '';
+        $('controlBox').style.display = rotation ? 'none' : '';
+        $('fovAlignmentBox').style.display = rotation ? 'none' : '';
+        const human = $('helper').value === 'human';
+        $('humanHint').style.display = human ? '' : 'none';
+        $('humanLink').textContent = location.origin + '/study/helper';
+    }
+    $('experiment').addEventListener('change', updateFactorInputs);
+    $('helper').addEventListener('change', updateFactorInputs);
+    updateFactorInputs();
+
+    $('start').addEventListener('click', () => {
+        showError('');
+        socket.emit('observer_start', {
+            experiment: $('experiment').value,
+            complexity: $('complexity').value,
+            complexities: [...document.querySelectorAll('.pieceSet:checked')].map((box) => box.value),
+            fov_control: $('fov_control').value,
+            fov_alignment: $('experiment').value === 'rotation' ? 'aligned' : $('fov_alignment').value,
+            seed: $('seed').value,
+            trials_per_block: $('trials_per_block').value,
+            trial_limit: $('trial_limit').value,
+            max_turns: $('max_turns').value,
+            disclose: $('disclose').checked,
+            helper: $('helper').value,
+        });
+    });
+    $('pause').addEventListener('click', () => socket.emit('observer_pause', {}));
+    $('resume').addEventListener('click', () => socket.emit('observer_resume', {}));
+    $('stop').addEventListener('click', () => socket.emit('observer_stop', {}));
+    setStatus('idle');
+</script>
+</body>
+</html>

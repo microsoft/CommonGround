@@ -39,6 +39,8 @@ app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
 app.config['AUTO_START_MODE'] = os.environ.get('AUTO_START_MODE') or None
 app.config['SHARED_VIEW_ENABLED'] = _env_bool('SHARED_VIEW_ENABLED', True)
 app.config['RUN_STUDY_MODE'] = _env_bool('RUN_STUDY_MODE', False)
+# The AI-AI study observer can start paid model calls, so it is off unless launched explicitly.
+app.config['OBSERVER_ENABLED'] = False
 
 allowed_origins = os.environ.get('SOCKETIO_ALLOWED_ORIGINS')
 if allowed_origins:
@@ -62,6 +64,11 @@ app.register_blueprint(puzzle_routes)
 from socket_handlers import register_handlers
 register_handlers(socketio, app)
 
+# Live observer for the AI-AI visual-information studies
+from observer import observer_routes, register_observer_handlers
+app.register_blueprint(observer_routes)
+register_observer_handlers(socketio, app)
+
 
 @app.get('/healthz')
 def healthz():
@@ -76,22 +83,25 @@ def add_security_headers(response):
     return response
 
 
-def run_server(mode=None, shared_view=True, run_study=False, host=None, port=None, debug=None):
+def run_server(mode=None, shared_view=True, run_study=False, host=None, port=None, debug=None, observer=False):
     """Configure app.config and start the Flask-SocketIO server.
 
     mode: None = manual role selection (human-human, or pick per browser),
     'worker' = human worker + AI helper, 'helper' = AI worker + human helper.
+    observer: serve the AI-AI study observer at /observer (can spend API budget).
     """
     app.config['AUTO_START_MODE'] = mode
     app.config['SHARED_VIEW_ENABLED'] = shared_view
     app.config['RUN_STUDY_MODE'] = run_study
+    app.config['OBSERVER_ENABLED'] = observer
 
     if host is None:
-        host = '0.0.0.0'
+        host = '127.0.0.1' if observer else '0.0.0.0'
     if port is None:
         port = int(os.environ.get('PORT', 5000))
     if debug is None:
-        debug = os.environ.get('FLASK_DEBUG', '1') == '1'
+        # The reloader would restart the server, and so kill a study run, whenever a source file changes.
+        debug = not observer and os.environ.get('FLASK_DEBUG', '1') == '1'
 
     labels = {
         None: 'Manual selection (human-human, or choose AI per browser)',
@@ -102,6 +112,8 @@ def run_server(mode=None, shared_view=True, run_study=False, host=None, port=Non
     if run_study:
         print("[study] Login required")
     print(f"[serve] http://localhost:{port}  (worker: /worker, helper: /helper)")
+    if observer:
+        print(f"[observer] http://localhost:{port}/observer  (AI-AI study runs spend model API budget)")
 
     socketio.run(app, host=host, port=port, debug=debug, allow_unsafe_werkzeug=True)
 

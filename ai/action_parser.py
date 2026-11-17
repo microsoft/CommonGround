@@ -142,11 +142,49 @@ class ActionParser:
         return None
     
     @staticmethod
-    def parse_llm_response(text: str) -> Dict[str, Any]:
+    def parse_study_actions(text: str, look_anywhere: bool = False, allow_done: bool = False) -> List[tuple]:
+        """
+        Parse the extra actions used by the visual-information studies.
+
+        Only commands at the start of a line count, so words inside a MESSAGE
+        cannot trigger them. With ``look_anywhere`` (used for the Helper, the only
+        role that can LOOK) a LOOK at a labelled cell such as C3 counts anywhere,
+        since the Helper often writes it inside its message. With ``allow_done``
+        (also the Helper only) a line holding just DONE declares the puzzle finished;
+        it must be the whole line, so "tell me when it's done" never counts.
+        Returns (position_in_text, action) pairs.
+        """
+        bullet = r'^[ \t]*(?:[-*][ \t]*)?'
+        coords = r'(?:[ \t]+at)?[ \t]*\(?(\d+)[ \t]*,[ \t]*(\d+)\)?'
+        found = []
+        flags = re.IGNORECASE | re.MULTILINE
+        for match in re.finditer(bullet + r'POINT' + coords, text, flags):
+            found.append((match.start(), {
+                'action': 'point', 'position': (int(match.group(1)), int(match.group(2)))}))
+        for match in re.finditer(bullet + r'SEND[ \t]+SNAPSHOT\b', text, flags):
+            found.append((match.start(), {'action': 'snapshot'}))
+        for match in re.finditer(bullet + r'SHOW[ \t]+(?:WINDOW|VIEW)' + coords, text, flags):
+            found.append((match.start(), {
+                'action': 'window', 'position': (int(match.group(1)), int(match.group(2)))}))
+        look_start = r'\b' if look_anywhere else bullet
+        for match in re.finditer(look_start + r'LOOK(?:[ \t]+at)?[ \t]+\**\(?([A-F])([1-6])\b', text, flags):
+            column = 'ABCDEF'.index(match.group(1).upper())
+            found.append((match.start(), {
+                'action': 'look', 'position': (column, int(match.group(2)) - 1)}))
+        if allow_done:
+            for match in re.finditer(bullet + r'\**DONE\**[ \t]*[.!]?[ \t]*$', text, flags):
+                found.append((match.start(), {'action': 'done'}))
+        return found
+
+    @staticmethod
+    def parse_llm_response(text: str, study_actions: bool = False, look_anywhere: bool = False,
+                           allow_done: bool = False) -> Dict[str, Any]:
         """
         Parse complete LLM response into structured actions.
         Returns dict with 'actions' list and 'message' if present.
         Supports multiple actions and preserves their order in the text.
+        Set study_actions to also recognise POINT, SEND SNAPSHOT, SHOW WINDOW and LOOK;
+        look_anywhere and allow_done are the Helper's options (see parse_study_actions).
         """
         result = {
             'actions': [],
@@ -209,6 +247,10 @@ class ActionParser:
                         'to': (to_x, to_y)
                     }))
         
+        if study_actions:
+            action_matches.extend(ActionParser.parse_study_actions(text, look_anywhere=look_anywhere,
+                                                                   allow_done=allow_done))
+
         # Sort actions by their position in the text to preserve order
         action_matches.sort(key=lambda x: x[0])
         result['actions'] = [action for pos, action in action_matches]
