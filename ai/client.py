@@ -33,8 +33,7 @@ class AIClient:
     def _initialize_client(self):
         """Initialize the OpenAI client.
 
-        Auth precedence (Entra ID wins when a scope is set, e.g. TRAPI, since such
-        gateways authenticate with AD tokens and reject API keys):
+        Auth precedence (an explicit scope selects Entra ID instead of API keys):
         1. OPENAI_API_KEY without OPENAI_ENDPOINT -> standard OpenAI (api.openai.com)
         2. OPENAI_ENDPOINT + OPENAI_SCOPE         -> Azure OpenAI via Entra ID (az login / managed identity)
         3. OPENAI_ENDPOINT + OPENAI_API_KEY       -> Azure OpenAI via API key

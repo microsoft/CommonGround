@@ -12,6 +12,7 @@ import json
 import random
 import time
 from pathlib import Path
+from uuid import uuid4
 
 from flask import (Blueprint, abort, current_app, redirect, render_template,
                    request, send_file, send_from_directory, session, url_for)
@@ -56,7 +57,7 @@ def _build_steps(arm: str, n_main: int, n_practice: int):
     steps = ["instructions"]
     steps += [f"practice:{i}" for i in range(n_practice)]
     steps += [f"trial:{i}" for i in range(n_main)]
-    steps += ["familiarity", "questionnaire", "done"]
+    steps += ["done"]
     return steps
 
 
@@ -73,21 +74,25 @@ def _advance():
 
 
 def _require_session():
-    return session.get("credentials") and session.get("consent_given", False)
+    local_mode = current_app.config.get("LOCAL_ASSIGNMENT") is not None
+    return bool(session.get("credentials")) and bool(session.get("local_mode")) == local_mode
 
 
 def _refresh_flow_state_if_needed():
-    """Heal stale in-cookie flow state after snapshot/manifest rebuilds.
+    """Heal stale in-cookie flow state after snapshot or flow changes.
 
     If a participant started before a rebuild, ``session['practice']`` and
     ``session['steps']`` can reference old snapshot ids. Recompute from current
-    roster/manifest and keep the pointer clamped.
+    roster/manifest and keep the pointer clamped. Updating only the steps must
+    preserve existing ratings and the placement of interleaved checks.
     """
     cred = session.get("credentials")
     if not cred:
         return
 
-    row = assignment.row_for_credentials(cred)
+    row = current_app.config.get("LOCAL_ASSIGNMENT")
+    if row is None:
+        row = assignment.row_for_credentials(cred)
     if row is None:
         return
 
@@ -101,26 +106,29 @@ def _refresh_flow_state_if_needed():
     # Checks (is_check cells) are interleaved into practice/trials at random
     # positions by _init_flow; compare only the underlying (check-stripped)
     # assignment so a request does not silently strip them.
-    if (_strip_checks(session.get("trials")) == expected_trials and
-            _strip_checks(session.get("practice")) == expected_practice):
-        return
-
-    session["condition"] = condition
-    session["condition_version"] = S.CONDITION_VERSIONS.get(condition, condition)
-    session["arm"] = arm
-    session["dialogue_id"] = first
-    session["dialogues"] = dialogues
-    session["view"] = row.get("view", "")
-    session["source_view"] = row.get("source_view", "")
-    session["trials"] = _build_trials(dialogues, condition, arm)
-    session["practice"] = _insert_checks(
-        list(expected_practice), condition, arm, first, PRACTICE_CHECK_TYPES)
+    assignment_changed = (
+        _strip_checks(session.get("trials")) != expected_trials or
+        _strip_checks(session.get("practice")) != expected_practice
+    )
+    if assignment_changed:
+        session["condition"] = condition
+        session["condition_version"] = S.CONDITION_VERSIONS.get(condition, condition)
+        session["arm"] = arm
+        session["dialogue_id"] = first
+        session["dialogues"] = dialogues
+        session["view"] = row.get("view", "")
+        session["source_view"] = row.get("source_view", "")
+        session["trials"] = _build_trials(dialogues, condition, arm)
+        session["practice"] = _insert_checks(
+            list(expected_practice), condition, arm, first, PRACTICE_CHECK_TYPES)
 
     steps = _build_steps(arm, len(session["trials"]), len(session["practice"]))
-    old_ptr = int(session.get("step_ptr", 0))
-    session["steps"] = steps
-    session["step_ptr"] = min(max(old_ptr, 0), max(len(steps) - 1, 0))
-    _warn_if_checks_missing("refresh")
+    if assignment_changed or session.get("steps") != steps:
+        old_ptr = int(session.get("step_ptr", 0))
+        session["steps"] = steps
+        session["step_ptr"] = min(max(old_ptr, 0), max(len(steps) - 1, 0))
+    if assignment_changed:
+        _warn_if_checks_missing("refresh")
 
 
 def _resolve_snapshot(cell, arm):
@@ -201,38 +209,29 @@ def _warn_if_checks_missing(where: str) -> None:
 
 
 # --------------------------------------------------------------------------- #
-# Entry / consent
+# Entry / login
 # --------------------------------------------------------------------------- #
 @bp.route("/")
 def index():
+    local = current_app.config.get("LOCAL_ASSIGNMENT")
+    if local is not None:
+        if not _require_session() or any(
+            session.get(key) != local[key]
+            for key in ("condition", "arm", "dialogue_id", "view")
+        ):
+            _start_session(f"local-{uuid4().hex}", local, local_mode=True)
+        return redirect(url_for("study4.flow"))
     if session.get("is_admin"):
         return redirect(url_for("study4.admin"))
-    if not session.get("consent_given", False):
-        return redirect(url_for("study4.consent"))
-    if not session.get("credentials"):
+    if not _require_session():
         return redirect(url_for("study4.login"))
     return redirect(url_for("study4.flow"))
 
 
-@bp.route("/consent", methods=["GET", "POST"])
-def consent():
-    if request.method == "POST":
-        if request.form.get("agree") == "yes":
-            session["consent_given"] = True
-            return redirect(url_for("study4.login"))
-        return redirect(url_for("study4.consent_declined"))
-    return render_template("consent.html")
-
-
-@bp.route("/consent-declined")
-def consent_declined():
-    return render_template("consent_declined.html")
-
-
 @bp.route("/login", methods=["GET", "POST"])
 def login():
-    if not session.get("consent_given", False):
-        return redirect(url_for("study4.consent"))
+    if current_app.config.get("LOCAL_ASSIGNMENT") is not None:
+        return redirect(url_for("study4.index"))
     if request.method == "POST":
         prolific_id = (request.form.get("prolific_id") or "").strip()
         credentials = (request.form.get("credentials") or "").strip()
@@ -248,7 +247,6 @@ def login():
         # Admin credential: skip the study; go to the data-download console.
         if row.get("is_admin"):
             session.clear()
-            session["consent_given"] = True
             session["is_admin"] = True
             session["credentials"] = credentials
             return redirect(url_for("study4.admin"))
@@ -257,39 +255,45 @@ def login():
             return render_template("login.html",
                                    error="Please enter your Prolific ID to continue.")
 
-        session.clear()
-        session["consent_given"] = True
-        session["prolific_id"] = prolific_id
-        session["credentials"] = credentials
-        session["participant_index"] = row["row_index"]
-        session["condition"] = row["condition"]
-        session["condition_version"] = S.CONDITION_VERSIONS.get(
-            row["condition"], row["condition"])
-        session["arm"] = row["arm"]
-        session["dialogue_id"] = row["dialogue_id"]
-        session["dialogues"] = row["dialogues"]
-        session["view"] = row.get("view", "")
-        session["source_view"] = row.get("source_view", "")
-        session["trials"] = row["trials"]
-
-        cred = session["credentials"]
-        storage.log_event(cred, "session_started",
-                          {"participant_index": session["participant_index"],
-                           "prolific_id": session["prolific_id"]},
-                          arm=session["arm"])
-        storage.log_event(cred, "arm_assigned",
-                          {"arm": session["arm"], "condition": session["condition"],
-                           "session": session["dialogue_id"]},
-                          arm=session["arm"])
-        _init_flow()
+        _start_session(credentials, row, prolific_id=prolific_id)
         return redirect(url_for("study4.flow"))
     return render_template("login.html", error=None)
 
 
 @bp.route("/start", methods=["POST"])
 def start():
-    # Legacy endpoint retained for compatibility with older templates.
+    if current_app.config.get("LOCAL_ASSIGNMENT") is not None:
+        session.clear()
+        return redirect(url_for("study4.index"))
     return redirect(url_for("study4.login"))
+
+
+def _start_session(credentials, row, prolific_id=None, local_mode=False):
+    session.clear()
+    session["local_mode"] = local_mode
+    if prolific_id is not None:
+        session["prolific_id"] = prolific_id
+    session["credentials"] = credentials
+    session["participant_index"] = row["row_index"]
+    session["condition"] = row["condition"]
+    session["condition_version"] = S.CONDITION_VERSIONS.get(
+        row["condition"], row["condition"])
+    session["arm"] = row["arm"]
+    session["dialogue_id"] = row["dialogue_id"]
+    session["dialogues"] = row["dialogues"]
+    session["view"] = row.get("view", "")
+    session["source_view"] = row.get("source_view", "")
+    session["trials"] = row["trials"]
+
+    storage.log_event(credentials, "session_started",
+                      {"participant_index": session["participant_index"],
+                       "prolific_id": prolific_id or "", "local_mode": local_mode},
+                      arm=session["arm"])
+    storage.log_event(credentials, "arm_assigned",
+                      {"arm": session["arm"], "condition": session["condition"],
+                       "session": session["dialogue_id"]},
+                      arm=session["arm"])
+    _init_flow()
 
 
 def _init_flow():
@@ -308,7 +312,6 @@ def _init_flow():
                                     len(session["practice"]))
     session["step_ptr"] = 0
     session["trial_started_at"] = time.time()
-    session["consented"] = True
     _warn_if_checks_missing("init_flow")
 
 
@@ -317,10 +320,10 @@ def _init_flow():
 # --------------------------------------------------------------------------- #
 @bp.route("/flow", methods=["GET"])
 def flow():
-    if session.get("is_admin"):
-        return redirect(url_for("study4.admin"))
     if not _require_session():
         return redirect(url_for("study4.index"))
+    if session.get("is_admin"):
+        return redirect(url_for("study4.admin"))
     _refresh_flow_state_if_needed()
     step = _current_step()
     kind = step.split(":")[0]
@@ -380,12 +383,6 @@ def flow():
                                is_conv_start=is_conv_start,
                                slider_min=S.SLIDER_MIN, slider_max=S.SLIDER_MAX)
 
-    if kind == "familiarity":
-        return render_template("familiarity.html")
-
-    if kind == "questionnaire":
-        return render_template("questionnaire.html")
-
     return redirect(url_for("study4.done"))
 
 
@@ -393,6 +390,8 @@ def flow():
 def flow_submit():
     if not _require_session():
         return redirect(url_for("study4.index"))
+    if session.get("is_admin"):
+        return redirect(url_for("study4.admin"))
     _refresh_flow_state_if_needed()
     step = _current_step()
     kind = step.split(":")[0]
@@ -401,8 +400,7 @@ def flow_submit():
     rt_ms = int((time.time() - session.get("trial_started_at", time.time())) * 1000)
 
     if kind == "instructions":
-        storage.log_event(cred, "pledge_accepted",
-                          {"accepted": request.form.get("pledge") == "on"}, arm=arm)
+        storage.log_event(cred, "instructions_completed", arm=arm)
 
     if kind in ("practice", "trial"):
         idx = int(step.split(":")[1])
@@ -438,7 +436,7 @@ def flow_submit():
         if snap and rating is not None:
             storage.log_grading(
                 credentials=cred,
-                participant_id=session.get("prolific_id", ""),
+                participant_id=cred if session.get("local_mode") else session.get("prolific_id", ""),
                 dialogue_id=cell["dialogue_id"],
                 condition=cell["condition"],
                 condition_version=snap.get("condition_version"),
@@ -453,27 +451,6 @@ def flow_submit():
                 is_check=bool(snap.get("is_check")),
             )
 
-    elif kind == "familiarity":
-        f = request.form
-        storage.log_event(cred, "familiarity_submitted", {
-            "value": f.get("familiarity", type=int),
-            "ai_trust": f.get("ai_trust", type=int),
-            "ai_understand": f.get("ai_understand", type=int),
-            "ai_detect_uncertainty": f.get("ai_detect_uncertainty", type=int),
-            "pair_same_page": f.get("pair_same_page", type=int),
-            "pair_ai_understood": f.get("pair_ai_understood", type=int),
-            "pair_smooth": f.get("pair_smooth", type=int),
-            "pair_repeated": f.get("pair_repeated", type=int),
-        }, arm=arm)
-
-    elif kind == "questionnaire":
-        # Attention check: the carried-over "Antarctica / palm trees" item.
-        passed = request.form.get("attention") == "no"
-        storage.log_event(cred, "attention_check", {"passed": passed}, arm=arm)
-        storage.log_event(cred, "questionnaire_submitted",
-                          {"free_text": (request.form.get("free_text") or "")[:2000]},
-                          arm=arm)
-
     _advance()
     if _current_step() == "done":
         return redirect(url_for("study4.done"))
@@ -482,30 +459,22 @@ def flow_submit():
 
 @bp.route("/done")
 def done():
+    if not _require_session():
+        return redirect(url_for("study4.index"))
     cred = session.get("credentials")
-    condition = session.get("condition")
-    condition_version = session.get("condition_version") or S.CONDITION_VERSIONS.get(
-        condition, condition)
     if cred:
         storage.log_event(cred, "completed", {"prolific_id": session.get("prolific_id", "")},
                           arm=session.get("arm"))
-        if not session.get("debrief_shown"):
-            storage.log_event(cred, "debrief_shown", {
-                "condition": condition,
-                "condition_version": condition_version,
-            }, arm=session.get("arm"))
-            session["debrief_shown"] = True
     return render_template("done.html",
-                           completion_code=S.PROLIFIC_COMPLETION_CODE,
-                           condition=condition,
-                           condition_version=condition_version)
+                           local_mode=session.get("local_mode", False),
+                           completion_code="" if session.get("local_mode") else S.PROLIFIC_COMPLETION_CODE)
 
 
 # --------------------------------------------------------------------------- #
 # Admin data console (raw grading / event-log downloads)
 # --------------------------------------------------------------------------- #
 def _require_admin() -> bool:
-    return bool(session.get("is_admin"))
+    return _require_session() and bool(session.get("is_admin"))
 
 
 @bp.route("/admin")

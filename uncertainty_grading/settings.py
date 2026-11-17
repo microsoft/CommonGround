@@ -97,7 +97,7 @@ class Settings:
         self.SECRET_KEY = _env("SECRET_KEY", DEVELOPMENT_SECRET)
         self.HOST = _env("HOST", "127.0.0.1")
         self.PORT = _env_int("PORT", 5004)
-        self.DEBUG = _env_bool("DEBUG", True)
+        self.DEBUG = _env_bool("DEBUG", False)
         self.COOKIE_SECURE = _env_bool("COOKIE_SECURE", True)
         self.COOKIE_SAMESITE = _env("COOKIE_SAMESITE", "Lax")
         self.SESSION_LIFETIME_MINUTES = _env_int("SESSION_LIFETIME_MINUTES", 180)

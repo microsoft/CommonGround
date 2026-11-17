@@ -2,99 +2,7 @@
 {% block title %}Complete{% endblock %}
 {% block content %}
   <h1>Thank you!</h1>
-  <p class="lead">You have completed the study. Your responses have been recorded.</p>
-
-  <section class="debrief">
-    <h2>Microsoft Research – Study Debrief Statement</h2>
-    <p><strong>Project Title:</strong> Common ground in human-AI interaction<br>
-      <strong>Principal Investigator:</strong> Christian Poelitz<br>
-      <strong>Co-Investigator:</strong> Sian Lindley</p>
-    <p>Thank you again for taking part in our research study. Now that your
-      participation is complete, we would like to explain one aspect of the
-      study design that we did not describe in full beforehand.</p>
-    <p>The study compares different versions of puzzle-solving conversations
-      between a person (the Helper) and an AI (the Worker). We did not tell you
-      in advance which version you were viewing because knowing this could have
-      changed how you judged the AI's likely behaviour and confidence.</p>
-    <ul>
-      <li><strong>Original version:</strong> original, unaltered conversations
-        recorded from human-AI puzzle-solving sessions.</li>
-      <li><strong>Unambiguous-description version:</strong> conversations in
-        which some AI Worker responses were rewritten by a separate AI language
-        model so that the piece the Worker placed was described precisely and
-        unambiguously.</li>
-      <li><strong>Diagnostic-uncertainty version:</strong> conversations in
-        which the AI Worker used precise piece descriptions and selected
-        responses, primarily at wrong-piece placements, additionally expressed
-        mild uncertainty about whether the chosen piece was right.</li>
-      <li><strong>Confidence-triggered-uncertainty version:</strong>
-        conversations in which the AI Worker used the same precise piece
-        descriptions, but uncertainty was added at responses selected from the
-        Worker model's own prediction uncertainty rather than from knowledge of
-        whether the placement was correct.</li>
-    </ul>
-
-    {% if condition == 'C' %}
-    <p><strong>Your assignment:</strong> You saw a modified version of the
-      conversations. Some AI Worker responses were altered: vague or ambiguous
-      descriptions of the piece the Worker placed were replaced with precise,
-      visually verified descriptions intended to identify that piece
-      unambiguously. A separate AI language model was used to produce these
-      rewrites, which were then automatically validated.</p>
-    <p>The Worker's piece IDs, board positions and actions were unchanged, as
-      were all Helper messages and puzzle images. However, because some AI
-      Worker wording was rewritten, those exchanges were not verbatim records
-      of the original human-AI interactions.</p>
-    {% elif condition == 'D' %}
-    <p><strong>Your assignment:</strong> You saw the diagnostic-uncertainty
-      version. The AI Worker's piece descriptions were rewritten to identify
-      the chosen piece precisely. At selected turns, primarily where the Worker
-      placed a wrong piece, the response additionally expressed mild
-      uncertainty about whether that choice was right. Separate AI language
-      model rewrites and validation were used to create this version.</p>
-    <p>The Worker's piece IDs, board positions and actions were unchanged, as
-      were all Helper messages and puzzle images. Because the Worker wording
-      was rewritten, those exchanges were not verbatim records of the original
-      human-AI interactions.</p>
-    {% elif condition == 'E' %}
-    <p><strong>Your assignment:</strong> You saw the confidence-triggered-
-      uncertainty version. The AI Worker's piece descriptions were rewritten to
-      identify the chosen piece precisely. At selected turns where the Worker
-      model's prediction distribution indicated comparatively high uncertainty,
-      the response additionally expressed mild uncertainty about the choice.
-      Selection did not use whether the placement was actually correct, so these
-      cues could accompany either correct or wrong choices.</p>
-    <p>The Worker's piece IDs, board positions and actions were unchanged, as
-      were all Helper messages and puzzle images. Because the Worker wording
-      was rewritten, those exchanges were not verbatim records of the original
-      human-AI interactions.</p>
-    {% elif condition == 'B' %}
-    <p><strong>Your assignment:</strong> The conversation messages you rated
-      were original, unaltered records of human-AI puzzle-solving sessions.
-      Your version additionally showed the set of candidate pieces available
-      to the AI Worker.</p>
-    {% elif condition == 'A' %}
-    <p><strong>Your assignment:</strong> The conversations you rated were the
-      original, unaltered records of human-AI puzzle-solving sessions. The
-      conversation messages were not modified or artificially generated for
-      this study.</p>
-    {% else %}
-    <p>Some study versions used original conversations, while another version
-      altered some AI Worker piece descriptions using a separate AI language
-      model. No puzzle actions or Helper messages were altered.</p>
-    {% endif %}
-
-    <p>Now that you have all of the information, if you would prefer that we not
-      include your responses in our analysis, please contact
-      <a href="mailto:cpoelitz@microsoft.com">cpoelitz@microsoft.com</a> and we
-      will remove them.</p>
-    <p>Questions about the study may be sent to
-      <a href="mailto:cpoelitz@microsoft.com">Christian Poelitz</a> or
-      <a href="mailto:sianl@microsoft.com">Sian Lindley</a>. Questions about
-      your rights as a research participant may be sent to the Microsoft
-      Research Ethics Review Program at
-      <a href="mailto:MSRStudyFeedback@microsoft.com">MSRStudyFeedback@microsoft.com</a>.</p>
-  </section>
+  <p class="lead">You have completed the rating task. Your ratings have been recorded.</p>
 
   {% if completion_code %}
   <p>Your Prolific completion code is:</p>
@@ -103,5 +11,10 @@
     completion. You may now close this window.</p>
   {% else %}
   <p class="muted">You may now close this window.</p>
+  {% endif %}
+  {% if local_mode %}
+  <form method="post" action="{{ url_for('study4.start') }}">
+    <button class="btn" type="submit">Start another session</button>
+  </form>
   {% endif %}
 {% endblock %}

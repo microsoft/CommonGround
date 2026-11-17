@@ -3,7 +3,6 @@ Socket.IO event handlers for puzzle collaboration web app.
 Registered via register_handlers() in web_app.py.
 """
 import time
-import os
 from flask_socketio import emit, join_room
 from flask import request, session
 from datetime import datetime
@@ -619,19 +618,8 @@ def register_handlers(socketio, app):
         
         if result[0] is None:
             game_session.transitioning_to_next_trial = False
-            questionnaire_url = os.environ.get('FORMS_QUESTIONNAIRE_URL', '')
-            if questionnaire_url:
-                try:
-                    prolific_pid = session.get('prolific_pid', '')
-                    custom_session_id = session.get('custom_session_id', '')
-                    questionnaire_url = questionnaire_url.replace('PROLIFIC_USER_ID', prolific_pid or 'N/A')
-                    questionnaire_url = questionnaire_url.replace('PROLIFIC_SESSION_ID', custom_session_id or 'N/A')
-                except RuntimeError:
-                    pass
-            
             socketio.emit('all_trials_complete', {
-                'message': 'All puzzles completed! Thank you for participating.',
-                'questionnaire_url': questionnaire_url
+                'message': 'All puzzles completed! Thank you for participating.'
             }, room=session_id)
             return
         

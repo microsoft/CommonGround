@@ -1,7 +1,7 @@
 # PowerShell script to run the puzzle collaboration web app
 # Usage: 
 #   .\run_web_app.ps1              # Normal mode (manual role selection)
-#   .\run_web_app.ps1 -Study       # Study mode (with consent form)
+#   .\run_web_app.ps1 -Study       # Study mode (requires login)
 #   .\run_web_app.ps1 -Worker      # Human worker with AI helper
 #   .\run_web_app.ps1 -Study -Worker  # Study mode as worker
 
@@ -48,7 +48,7 @@ if ($Helper) { $pyArgs += "--helper" }
 if ($Study) { $pyArgs += "--run_study" }
 
 if ($Study) {
-    Write-Host "Running in STUDY MODE (consent form enabled)" -ForegroundColor Magenta
+    Write-Host "Running in STUDY MODE (login required)" -ForegroundColor Magenta
 }
 
 # Run the Flask app

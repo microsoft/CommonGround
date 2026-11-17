@@ -2,97 +2,106 @@
 
 Standalone Flask application for collecting human ratings of AI Worker behavior in Common Ground puzzle dialogues.
 
-The folder is intentionally runtime-only. It contains the web application and manifests for the frozen A-E study conditions; the required data assets are supplied locally. Historical results, analysis code, source corpora, stimulus builders, and old environments are not included.
+The folder is intentionally runtime-only. It contains the web application for
+the A-E study conditions; all original-study manifests and data assets are
+supplied locally. Historical results, analysis code, source corpora, stimulus
+builders, and old environments are not included in the source tree.
 
-> **Required local assets:** Frozen JSON snapshots and rendered board images
-> are not included in Git checkouts. Keep your existing `stimuli\snapshots\`
-> and `stimuli\boards\` directories, or restore matching assets before starting
-> the app or running the installation check.
+> **Required local study files:** The snapshot matrix, practice manifest, frozen
+> JSON snapshots, and rendered board images are excluded from Git checkouts and
+> Python distribution packages. Keep your existing `stimuli\` directory, or
+> restore matching, authorized study files before starting the app.
 > See [Frozen Stimuli](#frozen-stimuli).
 
 ## Quick Start
 
-Open PowerShell in this folder:
+With your Python environment active, open a terminal in this folder:
 
 ```powershell
-.\run.ps1
+python -m pip install -r requirements.txt  # First-time dependency setup
+python run.py
 ```
 
-The application opens at:
+Open:
 
 ```text
 http://127.0.0.1:5004
 ```
 
-The app uses the parent project environment at `..\.venv`. It does not create or
-use a virtual environment inside this folder.
+Local grading starts without an access code, Prolific ID, or participant roster.
+The defaults are condition **A**, rating type **CA**, the first matching dialogue
+in the local snapshot matrix, and that dialogue's original board visibility.
+Ratings are saved under a new random local session ID; local mode does not create
+study credentials or modify a roster.
 
-Manual setup and validation:
+To choose another local configuration:
 
 ```powershell
-.\setup.ps1
-.\doctor.ps1
-.\run.ps1
+python run.py --condition E --arm CA --view nonshared
+python run.py --condition A --arm CB --dialogue <dialogue_id> --port 5005
 ```
 
-A Command Prompt wrapper is also available:
+Use a dialogue ID from your local snapshot matrix. Run `python run.py --help`
+for options. The runner reports missing required stimulus files before starting;
+it does not download or regenerate the excluded study assets.
 
-```bat
-run.cmd
+From the repository root, `python uncertainty_grading\run.py` also works. The
+runner uses the active interpreter and does not require an editable package
+installation. If you already have the parent project's virtual environment but
+have not activated it, use:
+
+```powershell
+..\.venv\Scripts\python.exe run.py
 ```
+
+The optional `run.ps1` / `run.cmd` wrappers prefer an active virtual environment,
+otherwise use the parent's `.venv` when available. `setup.ps1` installs only the
+dependencies. No package installation or doctor command is needed.
 
 ## Included Conditions
 
-| Condition | Frozen version | Description |
-| --- | --- | --- |
-| A | A | Original Worker responses |
-| B | B | Original responses with candidate pieces shown |
-| C | C5 | Unambiguous piece descriptions |
-| D | D2 | C5 descriptions with primarily correctness-targeted uncertainty |
-| E | E1 | C5 descriptions with uncertainty selected from Worker model entropy |
+| Condition | Description |
+| --- | --- |
+| A | Original Worker responses |
+| B | Original responses with candidate pieces shown |
+| C | Unambiguous piece descriptions |
+| D | Descriptions with primarily correctness-targeted uncertainty |
+| E | Descriptions with uncertainty selected from Worker model entropy |
 
 Each condition supports both rating types:
 
 - `CB`: rating before the current Worker response
 - `CA`: rating after the current Worker response
 
-The frozen matrix contains 478 rows per condition and 2,390 rows total.
+The original study matrix contains 478 rows per condition and 2,390 rows total;
+it is not distributed with this source release.
 
-## Validate the Installation
+The local app goes straight to task instructions, practice ratings, main ratings,
+and a completion screen with a button to start another session. Study mode adds
+login first. Consent forms, post-task surveys, and the original-study
+debrief are not included. Existing sessions retain their rating progress and
+skip removed survey steps.
 
-Run:
 
-```powershell
-.\doctor.ps1
-```
+## Optional Study Mode
 
-The check validates:
-
-- the snapshot matrix and condition versions;
-- every snapshot JSON file;
-- every referenced target and Worker board image;
-- the participant roster schema;
-- credential and participant-ID uniqueness;
-- condition, arm, and dialogue assignments.
-
-Direct CLI equivalent:
+To use the existing participant login instead of local grading:
 
 ```powershell
-..\.venv\Scripts\python.exe -m uncertainty_grading doctor
+python run.py --study
 ```
 
-## Participant Credentials
-
-The live assignment file is:
+Study mode requires a Prolific ID and an access code. Conditions, rating types,
+dialogues, and views come from the existing live assignment file:
 
 ```text
 data\participant_roster.csv
 ```
 
-Generate credentials with the CLI. Always preview first:
+Credentials are only needed for study mode. Preview new assignments with:
 
 ```powershell
-..\.venv\Scripts\python.exe -m uncertainty_grading credentials `
+python run.py credentials `
   --condition E --arm CA --dialogues nonshared --view nonshared `
   --pair --n 1 --dry-run
 ```
@@ -100,12 +109,15 @@ Generate credentials with the CLI. Always preview first:
 Remove `--dry-run` to append the rows:
 
 ```powershell
-..\.venv\Scripts\python.exe -m uncertainty_grading credentials `
+python run.py credentials `
   --condition E --arm CA --dialogues nonshared --view nonshared `
   --pair --n 1
 ```
 
 The generator archives the roster before changing it. New archive directories are created only when needed.
+The `--pair --n 1` example requires an even number of at least two non-shared
+dialogues. Omit `--pair` for independent single-dialogue assignments.
+Use `python run.py credentials --help` for details.
 
 ## Runtime Data
 
@@ -119,29 +131,39 @@ data\roster_snapshots\ roster backups created before changes
 ```
 
 They are empty in the cleaned distribution. Treat future contents and `participant_roster.csv` as sensitive study data.
+The entire `data\` directory is ignored, including processed results and legacy
+roster backups. Never add these records to a source release.
+
+Event and grading log identifiers must be non-empty and contain only ASCII
+letters, digits, hyphens, or underscores. Invalid identifiers raise an error
+instead of being silently rewritten. Generated 32-character credentials and
+their existing log filenames are unchanged.
+
+CSV exports retain legacy survey columns for compatibility with existing logs;
+the app no longer collects those survey responses.
 
 The application uses local append-only files and should run as a single application instance. Do not scale to multiple instances without moving writes to shared durable storage.
 
 ## Frozen Stimuli
 
-Only the frozen study manifests are tracked in Git:
+All files below are required local inputs, not versioned release assets:
 
 ```text
 stimuli\snapshot_matrix.csv
 stimuli\practice_manifest.json
-```
-
-The following asset directories are ignored by Git:
-
-```text
 stimuli\snapshots\      frozen dialogue and board-state JSON
 stimuli\boards\         rendered PNG images
 ```
 
-On a fresh checkout or deployment, restore both directories with assets matching
-the manifests. `doctor` validates the snapshot JSON and referenced images, and
-will report missing assets until they are present. Removing the directories
-from Git tracking does not delete existing local files.
+On a fresh checkout or deployment, restore the manifests and both asset
+directories from an authorized source. The matrix contains study-session
+identifiers and per-turn measurements, so it must be handled as study data rather
+than generic configuration.
+
+Removing these paths from Git tracking preserves local files but does not erase
+older commits. Review historical copies separately before redistributing the
+repository. Package builds exclude `stimuli\` and `data\` even when those
+directories are populated locally.
 
 The original source corpora and rebuild pipeline were deliberately removed. Restore them from their source repository if the frozen stimuli must be regenerated.
 
@@ -156,7 +178,7 @@ Common settings:
 | `UNCERTAINTY_GRADING_HOST` | `127.0.0.1` |
 | `UNCERTAINTY_GRADING_PORT` | `5004` |
 | `UNCERTAINTY_GRADING_SECRET_KEY` | insecure development value |
-| `UNCERTAINTY_GRADING_DEBUG` | `true` |
+| `UNCERTAINTY_GRADING_DEBUG` | `false` |
 | `UNCERTAINTY_GRADING_COOKIE_SECURE` | `true` |
 | `UNCERTAINTY_GRADING_TRUST_PROXY_PROTO` | `true` |
 | `UNCERTAINTY_GRADING_HSTS_ENABLED` | `true` |
@@ -166,7 +188,11 @@ Common settings:
 | `UNCERTAINTY_GRADING_PROLIFIC_COMPLETION_URL` | placeholder URL |
 | `UNCERTAINTY_GRADING_PROLIFIC_COMPLETION_CODE` | empty |
 
-Local `run.ps1` disables Secure cookies, HSTS, and proxy trust for localhost HTTP without changing production defaults.
+Local `python run.py` disables Secure cookies, HSTS, and proxy trust for localhost
+HTTP without changing production defaults. The local CLI server also disables
+Flask debug mode, the interactive debugger,
+and the reloader, including when `FLASK_DEBUG` or a study debug setting is enabled.
+Use the production server below when serving participants.
 
 ## Production Run
 
@@ -180,34 +206,30 @@ $env:UNCERTAINTY_GRADING_HSTS_ENABLED = 'true'
 $env:UNCERTAINTY_GRADING_TRUST_PROXY_PROTO = 'true'
 ```
 
-Validate production configuration:
+Start with Waitress and study login. Required runtime inputs and production
+settings are checked at startup:
 
 ```powershell
-..\.venv\Scripts\python.exe -m uncertainty_grading doctor --production
+python run.py --production --host 0.0.0.0 --port 5004
 ```
 
-Start with Waitress:
-
-```powershell
-.\run.ps1 -Production -HostName 0.0.0.0 -Port 5004
-```
-
-For Linux deployments, `startup.sh` launches Gunicorn.
+For Linux deployments, `startup.sh` launches Gunicorn with study login. Install
+dependencies beforehand; the startup script does not install packages.
 
 ## Minimal Layout
 
 ```text
 uncertainty_grading\
   app.py, routes.py       Flask app and participant flow
-  assignment.py           roster-driven assignments
+  run.py                  direct local launcher; --study enables login
+  assignment.py           local and roster-driven assignments
   storage.py              event, grading, and export storage
   settings.py             local paths and configuration
-  cli.py, __main__.py     serve, doctor, and credentials commands
-  setup.ps1               creates the local runtime environment
+  cli.py, __main__.py     serve and credentials commands
+  setup.ps1               installs dependencies into the selected environment
   run.ps1, run.cmd        local or production launchers
-  doctor.ps1              installation validation
   data\                    live roster and future outputs only
-  stimuli\                versioned A-E manifests
+  stimuli\                local-only A-E manifests and study assets
     snapshots\            required local JSON snapshots, excluded from Git
     boards\               required local image assets, excluded from Git
   templates\, static\     user interface

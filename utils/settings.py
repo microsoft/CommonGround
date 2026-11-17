@@ -30,7 +30,6 @@ class Settings:
         # Default to utils/user_credentials.json in the same directory
         default_creds_path = os.path.join(os.path.dirname(__file__), "user_credentials.json")
         self.USER_CREDENTIALS_FILE = os.environ.get("USER_CREDENTIALS_FILE", default_creds_path)
-        self.FORMS_QUESTIONNAIRE_URL = os.environ.get("FORMS_QUESTIONNAIRE_URL", "")
         
         # File Paths
         self.LOGS_DIR = self._get_logs_directory()

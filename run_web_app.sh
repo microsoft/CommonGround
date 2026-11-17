@@ -6,7 +6,7 @@
 #   --worker        Start as human worker with AI helper (default)
 #   --helper        Start as AI worker with human helper
 #   --no-shared     Disable shared view (helper cannot see worker's progress)
-#   --study         Enable study mode (requires consent form)
+#   --study         Enable study mode (requires login)
 #   --port PORT     Specify port (default: 5000)
 #   --host HOST     Specify host (default: 0.0.0.0)
 #   --dev           Development mode (debug enabled)
@@ -66,7 +66,7 @@ while [[ $# -gt 0 ]]; do
             echo "  --worker        Start as human worker with AI helper (default)"
             echo "  --helper        Start as AI worker with human helper"
             echo "  --no-shared     Disable shared view"
-            echo "  --study         Enable study mode (requires consent form)"
+            echo "  --study         Enable study mode (requires login)"
             echo "  --port PORT     Specify port (default: 5000)"
             echo "  --host HOST     Specify host (default: 0.0.0.0)"
             echo "  --dev           Development mode (debug enabled)"

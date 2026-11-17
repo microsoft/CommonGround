@@ -65,8 +65,8 @@ Worker asks which spiral tile to use before continuing.
 ## Quick start
 
 Start with **human-human** mode to try the task without an AI account or API key.
-You will need Python, pip, and a modern browser. The application and regression
-tests have been tested with Python 3.12.
+You will need Python, pip, and a modern browser. The application has been tested
+with Python 3.12.
 
 Local runs and generic Linux hosting are supported. Azure App Service deployment
 files are excluded from this repository; Azure OpenAI remains an optional model
@@ -228,7 +228,7 @@ agent instructions are in [`ai/prompts.py`](ai/prompts.py).
 
 ## Running a study
 
-The web modes accept `--study` to require consent and login:
+The web modes accept `--study` to require login:
 
 ```powershell
 python run.py human-ai --role helper --study
@@ -240,7 +240,7 @@ a new credentials file, but its default output is `generated_users.json`; set
 `USER_CREDENTIALS_FILE` to that path or explicitly choose an output location.
 Do not overwrite credentials for an active study.
 
-Set `FORMS_QUESTIONNAIRE_URL` to direct participants to a post-task questionnaire.
+Study-specific consent forms and post-task surveys are not included.
 Authenticated admins can download collected logs at `/admin/download_logs`.
 
 ## Logging and analysis
@@ -257,11 +257,6 @@ AI calls also write the latest model-request payload to `last_message_sent.json`
 in the working directory, which must be writable. This debug file can contain
 conversation context and board images.
 
-Analysis notebooks are in [`log_analysis/`](log_analysis/).
-**Keep credentials, model-request payloads, conversation logs, and participant
-data out of version control.** AI modes send conversation and image data to the
-configured model provider; account for this when planning a study.
-
 Active game state is held in server memory, not restored from the logs. Restarting
 the server loses active boards; multi-process or multi-instance deployment would
 require shared session state.
@@ -273,38 +268,24 @@ collecting human ratings of AI Worker behavior. It presents frozen dialogue and
 board snapshots across conditions A-E, with ratings before or after a Worker
 response, rather than running live puzzle agents.
 
-Its frozen JSON snapshots and rendered board images are kept locally in
-`uncertainty_grading/stimuli/snapshots/` and
-`uncertainty_grading/stimuli/boards/`, respectively, and are not tracked by Git.
-Fresh checkouts need both sets of assets, matching the versioned manifests,
-before running the rating application. The main puzzle game generates its own
-images and does not depend on these directories.
+All original-study files under `uncertainty_grading/stimuli/` are supplied
+locally and excluded from Git and Python distribution packages. This includes
+the snapshot matrix and practice manifest as well as the frozen JSON snapshots
+and rendered board images. Fresh checkouts need matching, authorized copies of
+all four before running the rating application. The main puzzle game generates
+its own images and does not depend on these files.
+
+With the grading dependencies installed, run it directly from the repository root:
+
+```powershell
+python uncertainty_grading\run.py
+```
+
+Local grading does not require login or generated credentials. Add `--study` to
+use the existing participant access-code flow.
 
 See its [README](uncertainty_grading/README.md) for its own setup, participant
 assignments, study conditions, and data-handling guidance.
-
-## Troubleshooting
-
-| Symptom | What to check |
-| --- | --- |
-| An AI mode behaves like human-human mode | Restart the updated server with the intended `human-ai` command, then open the home page to reach the correct role. `--role` describes the human, not the AI. |
-| The AI replies with `ERROR: Event loop is closed` | Update the code and stop the server completely before restarting it. Web AI requests now share a persistent event loop; refreshing a browser alone does not replace an older server's cached client. |
-| The Helper cannot see the Worker's board | Check the puzzle's `group`. Hiding the progress panel is intentional in non-shared view. |
-| **Next Puzzle** is disabled | Check `require_complete`: every target cell must match, or the configured completion-gate timeout must expire. |
-| Python cannot import an installed dependency | Activate the project's virtual environment and install `requirements.txt` using that interpreter. |
-
-## Tests
-
-From the repository root, with the project dependencies installed:
-
-```powershell
-python -m unittest discover -s tests -v
-```
-
-The [regression suite](tests/) covers local configuration, log paths, role
-selection, study-mode gates, repeated AI replies, session isolation, and async
-execution. Model responses are mocked or served by a local HTTP stub; the tests do
-not call external model endpoints.
 
 ## Project layout
 
@@ -312,15 +293,14 @@ not call external model endpoints.
 | --- | --- |
 | [`run.py`](run.py) | Unified launcher for all three modes. |
 | [`ai_vs_ai.py`](ai_vs_ai.py) | Headless AI-AI experiment runner. |
-| [`web_app.py`](web_app.py), [`routes.py`](routes.py) | Flask application, pages, login, and consent. |
+| [`web_app.py`](web_app.py), [`routes.py`](routes.py) | Flask application, pages, login, and role selection. |
 | [`socket_handlers.py`](socket_handlers.py) | Real-time game events and background AI turns. |
 | [`game_session.py`](game_session.py) | Game state, board actions, trial progression, and AI integration. |
 | [`ai/`](ai/) | Agents, model client, shared async execution, prompts, action parsing, image serialization, and trial logging. |
 | [`utils/`](utils/) | Settings, puzzle definitions, and authentication helpers. |
 | [`templates/`](templates/), [`static/`](static/) | Browser interfaces and styling. |
 | [`web_logger.py`](web_logger.py) | Session event logging. |
-| [`tests/`](tests/) | Offline regression tests for web modes and AI request execution. |
-| [`uncertainty_grading/`](uncertainty_grading/) | Companion human-rating application and frozen study stimuli. |
+| [`uncertainty_grading/`](uncertainty_grading/) | Companion human-rating application; study manifests and stimuli are supplied locally. |
 
 Local launchers include [`run.ps1`](run.ps1) and [`run.sh`](run.sh). The existing
 [`run_web_app.ps1`](run_web_app.ps1), [`run_web_app.sh`](run_web_app.sh), and

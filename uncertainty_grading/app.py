@@ -1,7 +1,7 @@
 """Flask application factory for the Study 4 rating web app.
 
-Run locally from the parent directory:
-    python -m uncertainty_grading
+Run locally from this directory:
+    python run.py
 
 The app is intentionally single-process and stateless per request: all
 durable state lives in the participant's server-side session plus the
@@ -30,6 +30,7 @@ def create_app(config: dict | None = None) -> Flask:
     app.config.from_mapping(
         SECRET_KEY=settings.SECRET_KEY,
         STUDY_SETTINGS=settings,
+        LOCAL_ASSIGNMENT=None,
         SESSION_COOKIE_NAME="uncertainty_grading_session",
         SESSION_COOKIE_HTTPONLY=True,
         SESSION_COOKIE_SECURE=settings.COOKIE_SECURE,

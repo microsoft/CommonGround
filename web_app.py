@@ -100,7 +100,7 @@ def run_server(mode=None, shared_view=True, run_study=False, host=None, port=Non
     }
     print(f"[mode] {labels.get(mode, mode)}{'' if shared_view else ' (non-shared view)'}")
     if run_study:
-        print("[study] Consent form enabled")
+        print("[study] Login required")
     print(f"[serve] http://localhost:{port}  (worker: /worker, helper: /helper)")
 
     socketio.run(app, host=host, port=port, debug=debug, allow_unsafe_werkzeug=True)
@@ -184,7 +184,7 @@ Role Assignment Priority:
     parser.add_argument(
         '--run_study',
         action='store_true',
-        help='Enable study mode (requires consent form before starting)'
+        help='Enable study mode (requires login before starting)'
     )
     
     args = parser.parse_args()

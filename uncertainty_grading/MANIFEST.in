@@ -1,0 +1,3 @@
+prune stimuli
+prune data
+exclude .env .env.*
