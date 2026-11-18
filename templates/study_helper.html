@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Study - Helper</title>
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+    <style>
+        * { box-sizing: border-box; }
+        body { margin: 0; font-family: Segoe UI, Arial, sans-serif; background: #f2f4f7; color: #222; }
+        header { background: #1f2d3d; color: #fff; padding: 12px 20px; display: flex; align-items: center; gap: 16px; }
+        header h1 { font-size: 18px; margin: 0; flex: 1; }
+        .pill { padding: 3px 12px; border-radius: 12px; font-size: 13px; background: #6b7785; }
+        .pill.your_turn { background: #2e9d57; } .pill.worker_turn, .pill.waiting { background: #d98e04; }
+        .pill.trial_over, .pill.run_over { background: #3367d6; } .pill.stopped, .pill.error { background: #c0392b; }
+        main { padding: 14px 20px; display: grid; grid-template-columns: minmax(0, 3fr) minmax(320px, 2fr); gap: 14px; }
+        @media (max-width: 1000px) { main { grid-template-columns: 1fr; } }
+        section { background: #fff; border-radius: 8px; padding: 12px 14px; box-shadow: 0 1px 3px rgba(0,0,0,.12); }
+        h2 { font-size: 14px; margin: 0 0 8px; text-transform: uppercase; letter-spacing: .04em; color: #4a5766; }
+        .pair { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+        figure { margin: 0; }
+        figure img { width: 100%; border: 1px solid #c8d0da; background: #eee; display: block; }
+        figcaption { font-size: 12px; color: #4a5766; margin-bottom: 4px; }
+        #status { margin-top: 10px; padding: 8px 10px; border-radius: 6px; background: #eef3fb; font-size: 14px; display: none; }
+        #notes { font-size: 13px; color: #8a4b00; margin-top: 8px; white-space: pre-wrap; }
+        #chat { height: 300px; overflow: auto; font-size: 14px; }
+        .msg { padding: 6px 9px; margin: 4px 0; border-radius: 6px; white-space: pre-wrap; }
+        .msg.helper { background: #e5f0ff; } .msg.worker { background: #e8f6ea; }
+        .msg b { display: block; font-size: 11px; text-transform: uppercase; color: #4a5766; }
+        textarea { width: 100%; min-height: 70px; font: inherit; font-size: 14px; padding: 7px; margin-top: 8px; }
+        .row { display: flex; gap: 8px; margin-top: 8px; align-items: center; flex-wrap: wrap; }
+        button { padding: 7px 16px; font-size: 14px; border: 0; border-radius: 5px; cursor: pointer; background: #3367d6; color: #fff; }
+        button.done { background: #6b7785; }
+        button:disabled { opacity: .45; cursor: default; }
+        #lookBox { display: none; margin-top: 12px; }
+        #lookGrid { display: grid; grid-template-columns: 24px repeat(6, 42px); gap: 3px; align-items: center; }
+        #lookGrid button { padding: 6px 0; font-size: 12px; background: #e8edf5; color: #1f2d3d; }
+        #lookGrid span { font-size: 12px; color: #4a5766; text-align: center; }
+        #error { display: none; background: #fdecea; color: #a02a1f; padding: 8px 12px; border-radius: 6px; margin-top: 8px; }
+        details { margin-top: 12px; font-size: 14px; }
+        details li { margin: 4px 0; }
+        .hint { font-size: 12px; color: #6b7785; }
+    </style>
+</head>
+<body>
+<header>
+    <h1>Collaborative puzzle: you are the Helper</h1>
+    <span id="trial"></span>
+    <span id="state" class="pill">connecting</span>
+</header>
+<main>
+    <section>
+        <h2>What you see</h2>
+        <div id="images" class="pair"></div>
+        <div id="status"></div>
+        <div id="notes"></div>
+    </section>
+    <section>
+        <h2>Conversation with the Worker</h2>
+        <div id="chat"></div>
+        <textarea id="message" placeholder="Your message to the Worker (Enter sends, Shift+Enter for a new line)" disabled></textarea>
+        <div class="row">
+            <button id="send" disabled>Send message</button>
+            <button id="done" class="done" disabled title="Ask the game to check the Worker's board">DONE</button>
+        </div>
+        <div id="lookBox">
+            <h2>Look at (moves your window; top-left cell)</h2>
+            <div id="lookGrid"></div>
+            <p class="hint" id="lookHint"></p>
+        </div>
+        <div id="error"></div>
+        <details open>
+            <summary>Instructions</summary>
+            <ul id="instructions"></ul>
+        </details>
+    </section>
+</main>
+<script>
+    const $ = (id) => document.getElementById(id);
+    const socket = io({ reconnection: true });
+    const STATES = {
+        idle: 'waiting for the study', waiting: 'please wait', your_turn: 'your turn',
+        worker_turn: "Worker's turn", trial_over: 'trial finished', run_over: 'finished', stopped: 'stopped',
+    };
+    let current = { state: 'idle' };
+    let draft = '';
+
+    function showError(text) {
+        $('error').textContent = text || '';
+        $('error').style.display = text ? 'block' : 'none';
+    }
+
+    function buildLookGrid() {
+        const grid = $('lookGrid');
+        grid.append(document.createElement('span'));
+        for (const col of 'ABCDEF') {
+            const head = document.createElement('span');
+            head.textContent = col;
+            grid.append(head);
+        }
+        for (let row = 1; row <= 6; row++) {
+            const head = document.createElement('span');
+            head.textContent = row;
+            grid.append(head);
+            for (const col of 'ABCDEF') {
+                const button = document.createElement('button');
+                button.textContent = col + row;
+                button.className = 'look';
+                button.addEventListener('click', () => submit({ kind: 'look', cell: col + row }));
+                grid.append(button);
+            }
+        }
+    }
+
+    function render(view) {
+        current = view;
+        const state = view.state || 'idle';
+        $('state').textContent = STATES[state] || state;
+        $('state').className = 'pill ' + state;
+        $('trial').textContent = view.trial_index
+            ? `Trial ${view.trial_index}` + (view.trial_total ? ` of ${view.trial_total}` : '') : '';
+
+        const images = $('images');
+        images.replaceChildren(...(view.images || []).map((image) => {
+            const fig = document.createElement('figure');
+            const cap = document.createElement('figcaption');
+            cap.textContent = image.label;
+            const img = document.createElement('img');
+            img.src = 'data:image/png;base64,' + image.png_b64;
+            img.alt = image.label;
+            fig.append(cap, img);
+            return fig;
+        }));
+        const idleText = 'Waiting for the researcher to start the study.';
+        const status = view.status || (state === 'idle' ? idleText : '');
+        $('status').textContent = status;
+        $('status').style.display = status ? 'block' : 'none';
+        $('notes').textContent = (view.notes || []).join('\n');
+
+        const chat = $('chat');
+        chat.replaceChildren(...(view.chat || []).map((entry) => {
+            const row = document.createElement('div');
+            row.className = 'msg ' + entry.sender;
+            const who = document.createElement('b');
+            who.textContent = entry.sender === 'helper' ? 'You' : 'Worker';
+            row.append(who, document.createTextNode(entry.text));
+            return row;
+        }));
+        chat.scrollTop = chat.scrollHeight;
+
+        const yourTurn = state === 'your_turn';
+        $('message').disabled = !yourTurn;
+        $('send').disabled = !yourTurn;
+        $('done').disabled = !(yourTurn && view.can_done);
+        $('lookBox').style.display = view.helper_window ? 'block' : 'none';
+        document.querySelectorAll('#lookGrid button').forEach((button) => { button.disabled = !(yourTurn && view.can_look); });
+        $('lookHint').textContent = view.helper_window && yourTurn
+            ? (view.can_look ? 'You can look once this turn, before you send your message.'
+                             : 'You have used your look for this turn.') : '';
+        $('instructions').replaceChildren(...(view.instructions || []).map((text) => {
+            const item = document.createElement('li');
+            item.textContent = text;
+            return item;
+        }));
+        if (yourTurn) $('message').focus();
+    }
+
+    function submit(data) {
+        if (current.state !== 'your_turn') return;
+        showError('');
+        socket.emit('human_helper_submit', data);
+    }
+
+    function sendMessage() {
+        const text = $('message').value.trim();
+        if (!text) { showError('Write a message first.'); return; }
+        draft = text;
+        $('message').value = '';
+        submit({ kind: 'message', text });
+    }
+
+    $('send').addEventListener('click', sendMessage);
+    $('message').addEventListener('keydown', (event) => {
+        if (event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); sendMessage(); }
+    });
+    $('done').addEventListener('click', () => submit({ kind: 'done' }));
+    socket.on('connect', () => socket.emit('human_helper_join', {}));
+    socket.on('disconnect', () => { $('state').textContent = 'disconnected'; $('state').className = 'pill error'; });
+    socket.on('human_helper_view', (view) => { draft = ''; render(view); });
+    socket.on('human_helper_error', (data) => {
+        showError(data.message);
+        if (draft && !$('message').value) $('message').value = draft;
+        draft = '';
+    });
+    buildLookGrid();
+    render(current);
+</script>
+</body>
+</html>
