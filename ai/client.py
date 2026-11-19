@@ -7,7 +7,7 @@ import logging
 import threading
 from typing import List, Dict, Any, Optional
 
-from azure.identity import DefaultAzureCredential, get_bearer_token_provider
+from azure.identity import AzureCliCredential, get_bearer_token_provider
 from openai import AsyncAzureOpenAI, AsyncOpenAI, BadRequestError
 from .async_executor import get_async_executor
 
@@ -65,9 +65,9 @@ class AIClient:
 
         Auth precedence (an explicit scope selects Entra ID instead of API keys):
         1. OPENAI_API_KEY without OPENAI_ENDPOINT -> standard OpenAI (api.openai.com)
-        2. OPENAI_ENDPOINT + OPENAI_SCOPE         -> Azure OpenAI via Entra ID (az login / managed identity)
+        2. OPENAI_ENDPOINT + OPENAI_SCOPE         -> Azure OpenAI via Azure CLI (local az login)
         3. OPENAI_ENDPOINT + OPENAI_API_KEY       -> Azure OpenAI via API key
-        4. OPENAI_ENDPOINT only                   -> Azure OpenAI via Entra ID (default scope)
+        4. OPENAI_ENDPOINT only                   -> Azure OpenAI via Azure CLI (default scope)
         """
         api_key = getattr(settings, 'OPENAI_API_KEY', '') or ''
         endpoint = settings.OPENAI_ENDPOINT or ''
@@ -77,13 +77,13 @@ class AIClient:
                 client = AsyncOpenAI(api_key=api_key)
                 logger.info("OpenAI client initialized (API key)")
             elif endpoint and scope:
-                token_provider = get_bearer_token_provider(DefaultAzureCredential(), scope)
+                token_provider = get_bearer_token_provider(AzureCliCredential(), scope)
                 client = AsyncAzureOpenAI(
                     azure_endpoint=endpoint,
                     api_version=settings.OPENAI_API_VERSION,
                     azure_ad_token_provider=token_provider,
                 )
-                logger.info("Azure OpenAI client initialized (Entra ID)")
+                logger.info("Azure OpenAI client initialized (Entra ID, Azure CLI)")
             elif endpoint and api_key:
                 client = AsyncAzureOpenAI(
                     azure_endpoint=endpoint,
@@ -93,13 +93,13 @@ class AIClient:
                 logger.info("Azure OpenAI client initialized (API key)")
             elif endpoint:
                 default_scope = scope or "https://cognitiveservices.azure.com/.default"
-                token_provider = get_bearer_token_provider(DefaultAzureCredential(), default_scope)
+                token_provider = get_bearer_token_provider(AzureCliCredential(), default_scope)
                 client = AsyncAzureOpenAI(
                     azure_endpoint=endpoint,
                     api_version=settings.OPENAI_API_VERSION,
                     azure_ad_token_provider=token_provider,
                 )
-                logger.info("Azure OpenAI client initialized (Entra ID, default scope)")
+                logger.info("Azure OpenAI client initialized (Entra ID, Azure CLI, default scope)")
             else:
                 raise RuntimeError(
                     "No AI backend configured: set OPENAI_API_KEY, or OPENAI_ENDPOINT "

@@ -116,7 +116,13 @@ overwrite existing credentials. Configure one of the following backends:
 | --- | --- |
 | **Standard OpenAI** | Set `OPENAI_API_KEY` to your API key and `OPENAI_GPT4_DEPLOYMENT` to the model name. Leave `OPENAI_ENDPOINT` empty. |
 | **Azure OpenAI with an API key** | Set `OPENAI_ENDPOINT`, `OPENAI_API_KEY`, `OPENAI_GPT4_DEPLOYMENT`, and `OPENAI_API_VERSION`. Leave `OPENAI_SCOPE` empty. |
-| **Azure OpenAI with Entra ID** | Authenticate through Azure CLI or managed identity, then set `OPENAI_ENDPOINT`, `OPENAI_SCOPE`, `OPENAI_GPT4_DEPLOYMENT`, and `OPENAI_API_VERSION`. |
+| **Azure OpenAI with Entra ID (local)** | Run `az login`, then set `OPENAI_ENDPOINT`, `OPENAI_SCOPE`, `OPENAI_GPT4_DEPLOYMENT`, and `OPENAI_API_VERSION`. |
+
+Entra ID authentication explicitly uses `AzureCliCredential` for local development
+and testing. It does not fall back to managed identity, service-principal
+environment credentials, or other sign-in tools. This mode is not intended for
+unattended hosted deployments; those need a separately configured workload
+credential, such as `ManagedIdentityCredential`.
 
 Use a **vision-capable model compatible with the Chat Completions API**: agents
 receive rendered boards and tile images alongside conversation context.
